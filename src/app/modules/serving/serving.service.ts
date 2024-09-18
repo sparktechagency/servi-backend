@@ -5,6 +5,7 @@ import { Serving } from "./serving.model";
 import { User } from "../user/user.model";
 import unlinkFile from "../../../shared/unlinkFile";
 import mongoose from "mongoose";
+import { JwtPayload } from "jsonwebtoken";
 
 const createServing = async (payload: IServing): Promise<IServing> => {
 
@@ -57,5 +58,19 @@ const updateServing = async (payload: any, user: any): Promise<IServing | null> 
     return result;
 };
 
+const deleteServingFromDB = async (id:string): Promise<IServing | undefined> => {
+    const serving = await Serving.findByIdAndDelete(id);
+    if(!serving){
+        throw new ApiError(StatusCodes.NOT_FOUND, "No Post Found To Deleted");
+    }
+    return;
+}
 
-export const ServingService = { createServing, updateServing } 
+
+const servingListFromDB = async (user:JwtPayload): Promise<IServing[]> => {
+    const servings:any = await Serving.find({user: user?.id}).select("title image price description service");
+    return servings;
+}
+
+
+export const ServingService = { createServing, updateServing, deleteServingFromDB, servingListFromDB } 

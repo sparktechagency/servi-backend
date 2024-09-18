@@ -29,7 +29,7 @@ const getChatFromDB = async(user:any): Promise<IChat[]> =>{
     //Use Promise.all to handle the asynchronous operations inside the map
     const chatList = await Promise.all(chats?.map(async (chat:any) => {
         const data = chat?.toObject();
-        const lastMessage:any = await Message.findOne({ chatId: chat?._id }).sort({ createdAt: -1 }).select("message createdAt")
+        const lastMessage:any = await Message.findOne({ chatId: chat?._id }).sort({ createdAt: -1 }).select("text offer createdAt sender")
       
         return {
             ...data,

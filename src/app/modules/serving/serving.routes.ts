@@ -21,4 +21,7 @@ router.patch("/update-serving",
     ServingController.updateServing
 )
 
+router.get("/", auth(USER_ROLES.USER), ServingController.servingList)
+router.delete("/delete/:id", auth(USER_ROLES.USER), ServingController.updateServing)
+
 export const ServingRoutes = router
