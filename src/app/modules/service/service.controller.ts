@@ -72,9 +72,22 @@ const deleteService = catchAsync(async (req: Request, res: Response) => {
   })
 })
 
+const getServiceByCategory = catchAsync(async (req: Request, res: Response) => {
+  const service = req.params.service
+  const result = await ServiceServices.getServiceByCategoryFromDB(service)
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Service Retrieved by Service Category successfully',
+    data: result,
+  })
+})
+
 export const ServiceController = {
   createService,
   getServices,
   updateService,
   deleteService,
+  getServiceByCategory
 }

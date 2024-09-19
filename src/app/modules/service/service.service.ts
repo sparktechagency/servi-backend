@@ -3,6 +3,9 @@ import ApiError from '../../../errors/ApiError'
 import { IService } from './service.interface'
 import { Service } from './service.model'
 import unlinkFile from '../../../shared/unlinkFile'
+import { Serving } from '../serving/serving.model'
+import { IServing } from '../serving/serving.interface'
+import { Bookmark } from '../bookmark/bookmark.model'
 
 const createServiceToDB = async (payload: IService) => {
   const {name, image} = payload;
@@ -53,9 +56,34 @@ const deleteServiceToDB = async (id: string): Promise<IService | null> => {
   return deleteService
 }
 
+const getServiceByCategoryFromDB = async (service: string): Promise<IServing[]> => {
+
+  const services = await Serving.find({service: service}).select("title image price description service");
+  
+  // get all of
+  const bookmarkId = await Bookmark.find({}).distinct("service");
+  const bookmarkIdStrings = bookmarkId.map((id:any) => id.toString());
+
+  // concat with bookmark id all of the service.
+  const serviceList = services?.map((item:any) => {
+      const service = item.toObject();
+      const isBookmark = bookmarkIdStrings.includes(service?.user?.toString());
+
+      const data:any = {
+          ...service,
+          bookmark: isBookmark
+      }
+      return data;
+  });
+
+
+  return serviceList;
+}
+
 export const ServiceServices = {
   createServiceToDB,
   getServicesFromDB,
   updateServiceToDB,
   deleteServiceToDB,
+  getServiceByCategoryFromDB
 }

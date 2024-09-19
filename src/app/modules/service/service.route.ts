@@ -25,10 +25,14 @@ router
     ServiceController.deleteService,
   )
 
-router.get(
-  '/',
+router.get('/',
   auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.USER),
   ServiceController.getServices,
+)
+
+router.get('/:service',
+  auth(USER_ROLES.USER),
+  ServiceController.getServiceByCategory,
 )
 
 export const ServiceRoutes = router
