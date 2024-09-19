@@ -166,6 +166,32 @@ const popularServiceFromDB = async (): Promise<IServing[]> => {
     return popularService;
 }
 
+const recommendedServiceFromDB = async (): Promise<IServing[]> => {
+
+    // find latest provider by rating
+    const service:any = await Serving.find({})
+        .sort({ createdAt: -1 }) 
+        .select("image title rating location");
+
+    // get all of
+    const bookmarkId = await Bookmark.find({}).distinct("service");
+    const bookmarkIdStrings = bookmarkId.map((id:any) => id.toString());
+
+    // concat with bookmark id all of the service.
+    const recommendedService = service?.map((item:any) => {
+        const service = item.toObject();
+        const isBookmark = bookmarkIdStrings.includes(service?.user?.toString());
+
+        const data:any = {
+            ...service,
+            bookmark: isBookmark
+        }
+        return data;
+    });
+
+    return recommendedService;
+}
+
 export const ServingService = { 
     createServing, 
     updateServing, 
@@ -173,5 +199,6 @@ export const ServingService = {
     servingListFromDB,
     myServingListFromDB,
     popularServiceFromDB,
-    servingDetailsFromDB
+    servingDetailsFromDB,
+    recommendedServiceFromDB
 } 

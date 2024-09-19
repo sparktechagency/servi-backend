@@ -22,6 +22,7 @@ router.patch("/update-serving",
 )
 
 router.get("/popular", auth(USER_ROLES.USER), ServingController.popularService);
+router.get("/recommended", auth(USER_ROLES.USER), ServingController.recommendedService);
 router.get("/my-service", auth(USER_ROLES.USER), ServingController.myServingList);
 router.get("/", auth(USER_ROLES.USER), ServingController.serviceList);
 router.get("/:id", auth(USER_ROLES.USER), ServingController.serviceDetails);

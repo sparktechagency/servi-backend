@@ -110,6 +110,18 @@ const popularService = catchAsync( async(req: Request, res: Response)=>{
     });
 })
 
+const recommendedService = catchAsync( async(req: Request, res: Response)=>{
+    
+    const result = await ServingService.recommendedServiceFromDB();
+
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Recommended Service Retrieved successfully",
+        data: result
+    });
+})
+
 export const ServingController = {
     createServing,
     updateServing,
@@ -117,5 +129,6 @@ export const ServingController = {
     myServingList,
     serviceList,
     popularService,
+    recommendedService,
     serviceDetails
 }
