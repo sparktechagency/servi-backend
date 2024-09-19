@@ -120,9 +120,26 @@ const servingListFromDB = async (query:any): Promise<IServing[]> => {
     }
 
     const whereConditions = anyConditions.length > 0 ? { $and: anyConditions } : {};
-
     const services:any = await Serving.find(whereConditions).select("title image price description service");
-    return services;
+
+
+    // get all of
+    const bookmarkId = await Bookmark.find({}).distinct("service");
+    const bookmarkIdStrings = bookmarkId.map((id:any) => id.toString());
+
+    // concat with bookmark id all of the service.
+    const serviceList = services?.map((item:any) => {
+        const service = item.toObject();
+        const isBookmark = bookmarkIdStrings.includes(service?.user?.toString());
+
+        const data:any = {
+            ...service,
+            bookmark: isBookmark
+        }
+        return data;
+    });
+
+    return serviceList;
 }
 
 const servingDetailsFromDB = async (id:any): Promise<IServing | {}> => {
