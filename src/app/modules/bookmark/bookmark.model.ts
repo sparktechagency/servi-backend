@@ -8,9 +8,9 @@ const bookmarkSchema = new Schema<IBookmark, BookmarkModel>(
             ref: "User",
             required: true
         },
-        artist: {
+        service: {
             type: Schema.Types.ObjectId,
-            ref: "User",
+            ref: "Serving",
             required: true
         }
     }, 

@@ -21,7 +21,10 @@ router.patch("/update-serving",
     ServingController.updateServing
 )
 
-router.get("/", auth(USER_ROLES.USER), ServingController.servingList)
-router.delete("/delete/:id", auth(USER_ROLES.USER), ServingController.updateServing)
+router.get("/popular", auth(USER_ROLES.USER), ServingController.popularService);
+router.get("/my-service", auth(USER_ROLES.USER), ServingController.myServingList);
+router.get("/", auth(USER_ROLES.USER), ServingController.serviceList);
+router.get("/:id", auth(USER_ROLES.USER), ServingController.serviceDetails);
+router.delete("/delete/:id", auth(USER_ROLES.USER), ServingController.updateServing);
 
 export const ServingRoutes = router

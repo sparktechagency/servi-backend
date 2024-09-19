@@ -6,6 +6,8 @@ import { User } from "../user/user.model";
 import unlinkFile from "../../../shared/unlinkFile";
 import mongoose from "mongoose";
 import { JwtPayload } from "jsonwebtoken";
+import { Bookmark } from "../bookmark/bookmark.model";
+import { Review } from "../review/review.model";
 
 const createServing = async (payload: IServing): Promise<IServing> => {
 
@@ -66,11 +68,110 @@ const deleteServingFromDB = async (id:string): Promise<IServing | undefined> => 
     return;
 }
 
-
-const servingListFromDB = async (user:JwtPayload): Promise<IServing[]> => {
+const myServingListFromDB = async (user:JwtPayload): Promise<IServing[]> => {
     const servings:any = await Serving.find({user: user?.id}).select("title image price description service");
     return servings;
 }
 
+const servingListFromDB = async (query:any): Promise<IServing[]> => {
+    
+    const {search, rating, minPrice, maxPrice, ...filerData } = query;
+    const anyConditions = [];
 
-export const ServingService = { createServing, updateServing, deleteServingFromDB, servingListFromDB } 
+    //service search here
+    if (search) {
+        anyConditions.push({
+            $or: ["title", "service"].map((field) => ({
+                [field]: {
+                    $regex: search,
+                    $options: "i"
+                }
+            }))
+        });
+    }
+
+    // artist filter here
+    if(Object.keys(filerData).length){
+        anyConditions.push({
+            $and: Object.entries(filerData).map(([field, value])=>({
+                [field]: value
+            }))
+        })
+    }
+
+    //service filter with price range
+    if (maxPrice && minPrice) {
+        anyConditions.push({
+            price: {
+                $gte: Number(minPrice),
+                $lte: Number(maxPrice)
+            },
+        });
+    }
+    
+    //service filter with rating range
+    if (rating) {
+        anyConditions.push({
+            rating: {
+                $gte: Number(rating),
+                $lt: Number(rating) + 1
+            },
+        });
+    }
+
+    const whereConditions = anyConditions.length > 0 ? { $and: anyConditions } : {};
+
+    const services:any = await Serving.find(whereConditions).select("title image price description service");
+    return services;
+}
+
+const servingDetailsFromDB = async (id:any): Promise<IServing | {}> => {
+
+    const service:any = await Serving.findById(id)
+    .populate({path: "user", select: "name profile"})
+    .select("user image title price price_breakdown description service location rating totalRating");
+    
+    const reviews:any = await Review.find({service: service?._id}).populate({path: "user", select: "name profile"}).select(" user comment rating");
+
+    const result = service?.toObject();
+    const data ={
+        ...result,
+        reviews: reviews
+    }
+    
+    return data;
+}
+
+const popularServiceFromDB = async (): Promise<IServing[]> => {
+
+    // find popular provider by rating
+    const service:any = await Serving.find({rating: {$gt: 0}}).select("image title rating location");
+
+    // get all of
+    const bookmarkId = await Bookmark.find({}).distinct("service");
+    const bookmarkIdStrings = bookmarkId.map((id:any) => id.toString());
+
+    // concat with bookmark id all of the service.
+    const popularService = service?.map((item:any) => {
+        const service = item.toObject();
+        const isBookmark = bookmarkIdStrings.includes(service?.user?.toString());
+
+        const data:any = {
+            ...service,
+            bookmark: isBookmark
+        }
+        return data;
+    });
+
+    return popularService;
+}
+
+export const ServingService = { 
+    createServing, 
+    updateServing, 
+    deleteServingFromDB, 
+    servingListFromDB,
+    myServingListFromDB,
+    popularServiceFromDB,
+    servingDetailsFromDB
+} 

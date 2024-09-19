@@ -62,14 +62,50 @@ const deleteServing = catchAsync( async(req: Request, res: Response)=>{
     });
 })
 
-const servingList = catchAsync( async(req: Request, res: Response)=>{
+const myServingList = catchAsync( async(req: Request, res: Response)=>{
     const user = req.user;
-    const result = await ServingService.servingListFromDB(user);
+    const result = await ServingService.myServingListFromDB(user);
 
     sendResponse(res, {
         statusCode: StatusCodes.OK,
         success: true,
-        message: "Post Retrieved successfully",
+        message: "My Service Retrieved successfully",
+        data: result
+    });
+})
+
+const serviceList = catchAsync( async(req: Request, res: Response)=>{
+    const query = req.query;
+    const result = await ServingService.servingListFromDB(query);
+
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Service List Retrieved successfully",
+        data: result
+    });
+})
+
+const serviceDetails = catchAsync( async(req: Request, res: Response)=>{
+    const id = req.params.id;
+    const result = await ServingService.servingDetailsFromDB(id);
+
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Service Details Retrieved successfully",
+        data: result
+    });
+})
+
+const popularService = catchAsync( async(req: Request, res: Response)=>{
+    
+    const result = await ServingService.popularServiceFromDB();
+
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Popular Service Retrieved successfully",
         data: result
     });
 })
@@ -78,5 +114,8 @@ export const ServingController = {
     createServing,
     updateServing,
     deleteServing,
-    servingList
+    myServingList,
+    serviceList,
+    popularService,
+    serviceDetails
 }
