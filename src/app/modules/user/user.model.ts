@@ -70,6 +70,21 @@ const userSchema = new Schema<IUser, UserModal>(
       },
       select: 0,
     },
+    accountInformation: {
+      status: {
+        type: Boolean,
+        default: false,
+      },
+      stripeAccountId: {
+        type: String,
+      },
+      externalAccountId: {
+        type: String,
+      },
+      currency: {
+        type: String,
+      }
+    }
   },
   { timestamps: true }
 );
@@ -83,6 +98,12 @@ userSchema.statics.isExistUserById = async (id: string) => {
 userSchema.statics.isExistUserByEmail = async (email: string) => {
   const isExist = await User.findOne({ email });
   return isExist;
+};
+
+//account check
+userSchema.statics.isAccountCreated = async (id: string) => {
+  const isUserExist:any = await User.findById(id);
+  return isUserExist.accountInformation.status;
 };
 
 //is match password

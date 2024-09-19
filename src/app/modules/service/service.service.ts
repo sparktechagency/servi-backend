@@ -31,7 +31,7 @@ const getServicesFromDB = async (): Promise<IService[]> => {
 }
 
 const updateServiceToDB = async (id: string, payload: IService) => {
-  const isExistService = await Service.findById(id);
+  const isExistService:any = await Service.findById(id);
 
   if(!isExistService){
     throw new ApiError(StatusCodes.BAD_REQUEST, "Service doesn't exist");
