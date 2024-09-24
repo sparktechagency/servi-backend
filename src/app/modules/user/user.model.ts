@@ -51,6 +51,7 @@ const userSchema = new Schema<IUser, UserModal>(
     },
     serving: {
       type: Schema.Types.ObjectId,
+      ref: "Serving",
       select: 0
     },
     authentication: {

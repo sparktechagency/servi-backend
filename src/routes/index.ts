@@ -9,6 +9,7 @@ import { MessageRoutes } from '../app/modules/message/message.routes';
 import { ReviewRoutes } from '../app/modules/review/review.routes';
 import { BannerRoutes } from '../app/modules/banner/banner.routes';
 import { PaymentRoutes } from '../app/modules/payment/payment.routes';
+import { OfferRouter } from '../app/modules/offer/offer.routes';
 const router = express.Router();
 
 const apiRoutes = [
@@ -22,6 +23,7 @@ const apiRoutes = [
   { path: '/review', route: ReviewRoutes },
   { path: '/banner', route: BannerRoutes },
   { path: '/payment', route: PaymentRoutes },
+  { path: '/offer', route: OfferRouter },
 ];
 
 apiRoutes.forEach(route => router.use(route.path, route.route));
