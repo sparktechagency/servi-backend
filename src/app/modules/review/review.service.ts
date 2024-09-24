@@ -3,12 +3,12 @@ import { IReview } from "./review.interface";
 import { Review } from "./review.model";
 import ApiError from "../../../errors/ApiError";
 import { StatusCodes } from "http-status-codes";
-import { Serving } from "../serving/serving.model";
+import { Post } from "../post/post.model";
 
 
 const createReviewToDB = async(payload: any): Promise<IReview>=>{
 
-    const isServiceExist:any = await Serving.findById({_id: new mongoose.Types.ObjectId(payload.service)});
+    const isServiceExist:any = await Post.findById({_id: new mongoose.Types.ObjectId(payload.service)});
     if(!isServiceExist){
         throw new ApiError(StatusCodes.NOT_FOUND, "No Service Found");
     }

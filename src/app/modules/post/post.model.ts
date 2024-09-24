@@ -1,7 +1,7 @@
 import { model, Schema } from 'mongoose';
-import { IServing, ServingModal } from './serving.interface';
+import { IPost, PostModal } from './post.interface';
 
-const servingSchema = new Schema<IServing, ServingModal>(
+const postSchema = new Schema<IPost, PostModal>(
   {
     user: {
       type: Schema.Types.ObjectId,
@@ -28,7 +28,7 @@ const servingSchema = new Schema<IServing, ServingModal>(
       type: String,
       required: true
     },
-    service: {
+    category: {
       type: String,
       required: true
     },
@@ -50,9 +50,9 @@ const servingSchema = new Schema<IServing, ServingModal>(
 );
 
 //exist user check
-servingSchema.statics.isExistServingById = async (id: string) => {
-  const isExist = await Serving.findById(id);
+postSchema.statics.isExistPostById = async (id: string) => {
+  const isExist = await Post.findById(id);
   return isExist;
 };
 
-export const Serving = model<IServing, ServingModal>('Serving', servingSchema);
+export const Post = model<IPost, PostModal>('Post', postSchema);

@@ -10,7 +10,7 @@ export type IUser = {
   password: string;
   location: string;
   profile?: string;
-  serving?: Types.ObjectId,
+  post?: Types.ObjectId,
   verified: boolean;
   authentication?: {
     isResetPassword: boolean;

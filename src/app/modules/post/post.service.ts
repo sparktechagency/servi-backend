@@ -1,7 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import ApiError from "../../../errors/ApiError";
-import { IServing } from "./serving.interface"
-import { Serving } from "./serving.model";
+import { IPost } from "./post.interface"
+import { Post } from "./post.model";
 import { User } from "../user/user.model";
 import unlinkFile from "../../../shared/unlinkFile";
 import mongoose from "mongoose";
@@ -9,7 +9,7 @@ import { JwtPayload } from "jsonwebtoken";
 import { Bookmark } from "../bookmark/bookmark.model";
 import { Review } from "../review/review.model";
 
-const createServing = async (payload: IServing): Promise<IServing> => {
+const createPost = async (payload: IPost): Promise<IPost> => {
 
     const user = payload.user as unknown as string;
     // check artist is add all bank info or not
@@ -18,62 +18,62 @@ const createServing = async (payload: IServing): Promise<IServing> => {
         throw new ApiError(StatusCodes.UNAUTHORIZED, "Please Put all of your bank info then try again");
     } */
 
-    const { price, ...othersData } = payload;
+    const { price } = payload;
 
     payload.price = Number(price);
 
-    const result:any = await Serving.create(payload);
+    const result:any = await Post.create(payload);
     if(!result){
-        throw new ApiError(StatusCodes.UNAUTHORIZED, "Failed to create Serving");
+        throw new ApiError(StatusCodes.UNAUTHORIZED, "Failed to create Post");
     }
 
     if(result?._id){         
-        await User.findByIdAndUpdate({_id: result?.user}, {$set: {serving: result?._id}});  
+        await User.findByIdAndUpdate({_id: result?.user}, {$set: {post: result?._id}});  
     }
 
     return result;
 }
 
-const updateServing = async (payload: any, user: any): Promise<IServing | null> => {
+const updatePost = async (payload: any, user: any): Promise<IPost | null> => {
 
-    const isValidUser: any = await User.findById(user?.id).select("+serving");
-    const isExistServing: any = await Serving.findById({_id: new mongoose.Types.ObjectId(isValidUser?.serving as string)});
+    const isValidUser: any = await User.findById(user?.id).select("+post");
+    const isExistPost: any = await Post.findById({_id: new mongoose.Types.ObjectId(isValidUser?.post as string)});
 
-    if (!isExistServing) {
-        throw new ApiError(StatusCodes.UNAUTHORIZED, "You are not authorized to edit Serving");
+    if (!isExistPost) {
+        throw new ApiError(StatusCodes.UNAUTHORIZED, "You are not authorized to edit Post");
     }
 
     const { image, ...othersValue } = payload;
 
     // Remove file only if `imagesToDelete` is present
     if (image) {
-        unlinkFile(isExistServing?.image);
+        unlinkFile(isExistPost?.image);
         othersValue.image = image
     }
 
-    // Update Serving and return result
-    const result = await Serving.findByIdAndUpdate(
-        { _id: isValidUser?.serving },
+    // Update Post and return result
+    const result = await Post.findByIdAndUpdate(
+        { _id: isValidUser?.post },
         othersValue,
         { new: true }
     );
     return result;
 };
 
-const deleteServingFromDB = async (id:string): Promise<IServing | undefined> => {
-    const serving = await Serving.findByIdAndDelete(id);
-    if(!serving){
+const deletePostFromDB = async (id:string): Promise<IPost | undefined> => {
+    const post = await Post.findByIdAndDelete(id);
+    if(!post){
         throw new ApiError(StatusCodes.NOT_FOUND, "No Post Found To Deleted");
     }
     return;
 }
 
-const myServingListFromDB = async (user:JwtPayload): Promise<IServing[]> => {
-    const servings:any = await Serving.find({user: user?.id}).select("title image price description service");
-    return servings;
+const myPostListFromDB = async (user:JwtPayload): Promise<IPost[]> => {
+    const posts:any = await Post.find({user: user?.id}).select("title image price description service");
+    return posts;
 }
 
-const servingListFromDB = async (query:any): Promise<IServing[]> => {
+const postListFromDB = async (query:any): Promise<IPost[]> => {
     
     const {search, rating, minPrice, maxPrice, ...filerData } = query;
     const anyConditions = [];
@@ -81,7 +81,7 @@ const servingListFromDB = async (query:any): Promise<IServing[]> => {
     //service search here
     if (search) {
         anyConditions.push({
-            $or: ["title", "service"].map((field) => ({
+            $or: ["title", "category"].map((field) => ({
                 [field]: {
                     $regex: search,
                     $options: "i"
@@ -120,11 +120,11 @@ const servingListFromDB = async (query:any): Promise<IServing[]> => {
     }
 
     const whereConditions = anyConditions.length > 0 ? { $and: anyConditions } : {};
-    const services:any = await Serving.find(whereConditions).select("title image price description service");
+    const services:any = await Post.find(whereConditions).select("title image price description category");
 
 
     // get all of
-    const bookmarkId = await Bookmark.find({}).distinct("service");
+    const bookmarkId = await Bookmark.find({}).distinct("post");
     const bookmarkIdStrings = bookmarkId.map((id:any) => id.toString());
 
     // concat with bookmark id all of the service.
@@ -142,9 +142,9 @@ const servingListFromDB = async (query:any): Promise<IServing[]> => {
     return serviceList;
 }
 
-const servingDetailsFromDB = async (id:any): Promise<IServing | {}> => {
+const postDetailsFromDB = async (id:any): Promise<IPost | {}> => {
 
-    const service:any = await Serving.findById(id)
+    const service:any = await Post.findById(id)
     .populate({path: "user", select: "name profile"})
     .select("user image title price price_breakdown description service location rating totalRating");
     
@@ -159,10 +159,10 @@ const servingDetailsFromDB = async (id:any): Promise<IServing | {}> => {
     return data;
 }
 
-const popularServiceFromDB = async (): Promise<IServing[]> => {
+const popularServiceFromDB = async (): Promise<IPost[]> => {
 
     // find popular provider by rating
-    const service:any = await Serving.find({rating: {$gt: 0}}).select("image title rating location");
+    const service:any = await Post.find({rating: {$gt: 0}}).select("image title rating location");
 
     // get all of
     const bookmarkId = await Bookmark.find({}).distinct("service");
@@ -183,10 +183,10 @@ const popularServiceFromDB = async (): Promise<IServing[]> => {
     return popularService;
 }
 
-const recommendedServiceFromDB = async (): Promise<IServing[]> => {
+const recommendedServiceFromDB = async (): Promise<IPost[]> => {
 
     // find latest provider by rating
-    const service:any = await Serving.find({})
+    const service:any = await Post.find({})
         .sort({ createdAt: -1 }) 
         .select("image title rating location");
 
@@ -209,13 +209,13 @@ const recommendedServiceFromDB = async (): Promise<IServing[]> => {
     return recommendedService;
 }
 
-export const ServingService = { 
-    createServing, 
-    updateServing, 
-    deleteServingFromDB, 
-    servingListFromDB,
-    myServingListFromDB,
+export const PostService = { 
+    createPost, 
+    updatePost, 
+    deletePostFromDB, 
+    postListFromDB,
+    myPostListFromDB,
     popularServiceFromDB,
-    servingDetailsFromDB,
+    postDetailsFromDB,
     recommendedServiceFromDB
 } 

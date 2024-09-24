@@ -15,7 +15,7 @@ const offerSchema = new Schema<IOffer, OfferModel>(
         },
         service: {
             type: Schema.Types.ObjectId,
-            ref: "Serving",
+            ref: "Post",
             required: true
         },
         status: {

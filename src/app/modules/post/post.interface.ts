@@ -1,16 +1,16 @@
 import { Model, Types } from 'mongoose';
 
-export type IServing = {
+export type IPost = {
   user: Types.ObjectId;
   image: string;
   title: string;
   price: number;
   price_breakdown: string;
   description: string;
-  service: string;
+  category: string;
   location: string;
   rating?: number;
   totalRating?: Number;
 };
 
-export type ServingModal = Model<IServing>;
+export type PostModal = Model<IPost>;

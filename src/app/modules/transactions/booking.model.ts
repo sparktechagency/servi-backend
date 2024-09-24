@@ -10,7 +10,7 @@ const bookingSchema = new Schema<IBooking, BookingModel>(
         },
         provider: {
             type: Schema.Types.ObjectId,
-            ref: "Serving",
+            ref: "Post",
             required: true,
         },
         price: {

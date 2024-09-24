@@ -3,8 +3,8 @@ import ApiError from '../../../errors/ApiError'
 import { IService } from './service.interface'
 import { Service } from './service.model'
 import unlinkFile from '../../../shared/unlinkFile'
-import { Serving } from '../serving/serving.model'
-import { IServing } from '../serving/serving.interface'
+import { Post } from '../post/post.model'
+import { IPost } from '../post/post.interface'
 import { Bookmark } from '../bookmark/bookmark.model'
 
 const createServiceToDB = async (payload: IService) => {
@@ -56,9 +56,9 @@ const deleteServiceToDB = async (id: string): Promise<IService | null> => {
   return deleteService
 }
 
-const getServiceByCategoryFromDB = async (service: string): Promise<IServing[]> => {
+const getServiceByCategoryFromDB = async (service: string): Promise<IPost[]> => {
 
-  const services = await Serving.find({service: service}).select("title image price description service");
+  const services = await Post.find({service: service}).select("title image price description service");
   
   // get all of
   const bookmarkId = await Bookmark.find({}).distinct("service");

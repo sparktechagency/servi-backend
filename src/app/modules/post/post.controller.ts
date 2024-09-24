@@ -2,10 +2,10 @@ import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import catchAsync from '../../../shared/catchAsync';
 import sendResponse from '../../../shared/sendResponse';
-import { ServingService } from './serving.service';
+import { PostService } from './post.service';
 
-const createServing = catchAsync(async (req: Request, res: Response) => {
-    const servingData = req.body;
+const createPost = catchAsync(async (req: Request, res: Response) => {
+    const postData = req.body;
     const user = req.user.id;
 
     let image;
@@ -14,21 +14,21 @@ const createServing = catchAsync(async (req: Request, res: Response) => {
     }
 
     const payload = {
-        ...servingData,
+        ...postData,
         image,
         user
     }
     
-    const result = await ServingService.createServing(payload);
+    const result = await PostService.createPost(payload);
     sendResponse(res, {
         statusCode: StatusCodes.OK,
         success: true,
-        message: "Serving created successfully",
+        message: "Post created successfully",
         data: result
     });
 });
 
-const updateServing = catchAsync(async (req: Request, res: Response) => {
+const updatePost = catchAsync(async (req: Request, res: Response) => {
     const user = req.user;
     const updateData = req.body;
 
@@ -42,18 +42,18 @@ const updateServing = catchAsync(async (req: Request, res: Response) => {
         image
     }
 
-    const result = await ServingService.updateServing(payload, user);
+    const result = await PostService.updatePost(payload, user);
     sendResponse(res, {
         statusCode: StatusCodes.OK,
         success: true,
-        message: "Serving updated successfully",
+        message: "Post updated successfully",
         data: result
     });
 });
 
-const deleteServing = catchAsync( async(req: Request, res: Response)=>{
+const deletePost = catchAsync( async(req: Request, res: Response)=>{
     const id = req.params.id;
-    await ServingService.deleteServingFromDB(id);
+    await PostService.deletePostFromDB(id);
 
     sendResponse(res, {
         statusCode: StatusCodes.OK,
@@ -62,9 +62,9 @@ const deleteServing = catchAsync( async(req: Request, res: Response)=>{
     });
 })
 
-const myServingList = catchAsync( async(req: Request, res: Response)=>{
+const myPostList = catchAsync( async(req: Request, res: Response)=>{
     const user = req.user;
-    const result = await ServingService.myServingListFromDB(user);
+    const result = await PostService.myPostListFromDB(user);
 
     sendResponse(res, {
         statusCode: StatusCodes.OK,
@@ -76,7 +76,7 @@ const myServingList = catchAsync( async(req: Request, res: Response)=>{
 
 const serviceList = catchAsync( async(req: Request, res: Response)=>{
     const query = req.query;
-    const result = await ServingService.servingListFromDB(query);
+    const result = await PostService.postListFromDB(query);
 
     sendResponse(res, {
         statusCode: StatusCodes.OK,
@@ -88,7 +88,7 @@ const serviceList = catchAsync( async(req: Request, res: Response)=>{
 
 const serviceDetails = catchAsync( async(req: Request, res: Response)=>{
     const id = req.params.id;
-    const result = await ServingService.servingDetailsFromDB(id);
+    const result = await PostService.postDetailsFromDB(id);
 
     sendResponse(res, {
         statusCode: StatusCodes.OK,
@@ -100,7 +100,7 @@ const serviceDetails = catchAsync( async(req: Request, res: Response)=>{
 
 const popularService = catchAsync( async(req: Request, res: Response)=>{
     
-    const result = await ServingService.popularServiceFromDB();
+    const result = await PostService.popularServiceFromDB();
 
     sendResponse(res, {
         statusCode: StatusCodes.OK,
@@ -112,7 +112,7 @@ const popularService = catchAsync( async(req: Request, res: Response)=>{
 
 const recommendedService = catchAsync( async(req: Request, res: Response)=>{
     
-    const result = await ServingService.recommendedServiceFromDB();
+    const result = await PostService.recommendedServiceFromDB();
 
     sendResponse(res, {
         statusCode: StatusCodes.OK,
@@ -122,11 +122,11 @@ const recommendedService = catchAsync( async(req: Request, res: Response)=>{
     });
 })
 
-export const ServingController = {
-    createServing,
-    updateServing,
-    deleteServing,
-    myServingList,
+export const PostController = {
+    createPost,
+    updatePost,
+    deletePost,
+    myPostList,
     serviceList,
     popularService,
     recommendedService,

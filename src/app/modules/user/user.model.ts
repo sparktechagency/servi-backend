@@ -49,9 +49,9 @@ const userSchema = new Schema<IUser, UserModal>(
       type: Boolean,
       default: false,
     },
-    serving: {
+    post: {
       type: Schema.Types.ObjectId,
-      ref: "Serving",
+      ref: "Post",
       select: 0
     },
     authentication: {
