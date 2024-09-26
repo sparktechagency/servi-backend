@@ -29,7 +29,7 @@ const createPost = catchAsync(async (req: Request, res: Response) => {
 });
 
 const updatePost = catchAsync(async (req: Request, res: Response) => {
-    const user = req.user;
+    const id = req.params.id;
     const updateData = req.body;
 
     let image;
@@ -42,7 +42,7 @@ const updatePost = catchAsync(async (req: Request, res: Response) => {
         image
     }
 
-    const result = await PostService.updatePost(payload, user);
+    const result = await PostService.updatePost(id, payload);
     sendResponse(res, {
         statusCode: StatusCodes.OK,
         success: true,

@@ -3,6 +3,7 @@ import ApiError from "../../../errors/ApiError";
 import { IBanner } from "./banner.interface";
 import { Banner } from "./banner.model";
 import unlinkFile from "../../../shared/unlinkFile";
+import mongoose from "mongoose";
 
 const createBannerToDB = async (payload:IBanner): Promise<IBanner> => {
 
@@ -20,6 +21,11 @@ const getAllBannerFromDB = async (): Promise<IBanner[]>=> {
 };
 
 const updateBannerToDB = async (id: string, payload:IBanner): Promise<IBanner | {}> => {
+
+  if(!mongoose.Types.ObjectId.isValid(id)){
+    throw new ApiError(StatusCodes.NOT_ACCEPTABLE, "Invalid ")
+  }
+
   const isBannerExist:any = await Banner.findById(id);
 
   if (payload.image) {
@@ -31,6 +37,10 @@ const updateBannerToDB = async (id: string, payload:IBanner): Promise<IBanner | 
 };
 
 const deleteBannerToDB = async (id: string): Promise<IBanner | undefined> => {
+
+  if(!mongoose.Types.ObjectId.isValid(id)){
+    throw new ApiError(StatusCodes.NOT_ACCEPTABLE, "Invalid ")
+  }
 
   const isBannerExist:any = await Banner.findById({_id: id});
 

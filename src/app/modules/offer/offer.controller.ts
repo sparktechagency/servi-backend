@@ -3,12 +3,16 @@ import catchAsync from "../../../shared/catchAsync";
 import { OfferService } from "./offer.service";
 import sendResponse from "../../../shared/sendResponse";
 import { StatusCodes } from "http-status-codes";
+import generateBookingId from "../../../util/generateBookingId";
 
 
 const createOffer = catchAsync(async(req: Request, res: Response)=>{
+    const offerId = generateBookingId();
+
     const payloadData = {
         ...req.body,
-        user: req.user.id
+        user: req.user.id,
+        offerId
     };
     const result = await OfferService.createOfferToDB(payloadData);
     sendResponse(res, {
@@ -22,6 +26,17 @@ const createOffer = catchAsync(async(req: Request, res: Response)=>{
 const getOffer = catchAsync(async(req: Request, res: Response)=>{
     const user = req.user;
     const result = await OfferService.getOfferFromDB(user);
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Offer Retrieved Successfully",
+        data: result
+    })
+})
+
+const getOfferDetails = catchAsync(async(req: Request, res: Response)=>{
+    const id = req.params.id;
+    const result = await OfferService.getOfferDetailsFromDB(id);
     sendResponse(res, {
         statusCode: StatusCodes.OK,
         success: true,
@@ -46,5 +61,6 @@ const respondOffer = catchAsync(async(req: Request, res: Response)=>{
 export const OfferController = {
     createOffer,
     getOffer,
-    respondOffer
+    respondOffer,
+    getOfferDetails
 }

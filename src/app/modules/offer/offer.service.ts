@@ -3,6 +3,7 @@ import ApiError from "../../../errors/ApiError";
 import { IOffer } from "./offer.interface";
 import { Offer } from "./offer.model";
 import { JwtPayload } from "jsonwebtoken";
+import mongoose from "mongoose";
 
 const createOfferToDB = async(payload:any): Promise<IOffer>=>{
     const offer = await Offer.create(payload);
@@ -23,7 +24,28 @@ const getOfferFromDB = async(user:JwtPayload): Promise<IOffer[]>=>{
                 path: "service", 
                 select: "title image price"
             }
-        ]).select("user service status");
+        ]).select("user service status").lean();
+    return offer;
+}
+
+const getOfferDetailsFromDB = async(id:string): Promise<IOffer | null>=>{
+
+    // Validate ID before making a database call
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid Offer ID');
+    }
+
+    const offer = await Offer.findById(id)
+        .populate([
+            {
+                path: "user", 
+                select: "name profile location"
+            },
+            {
+                path: "service", 
+                select: "title image price price_breakdown"
+            }
+        ]).select("user service status offerId offerDescription").lean();
     return offer;
 }
 
@@ -39,5 +61,6 @@ const respondOfferToDB = async(id:string, status: any): Promise<IOffer | undefin
 export const OfferService = {
     createOfferToDB,
     getOfferFromDB,
-    respondOfferToDB
+    respondOfferToDB,
+    getOfferDetailsFromDB
 }

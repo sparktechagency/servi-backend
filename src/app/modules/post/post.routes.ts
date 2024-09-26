@@ -14,7 +14,7 @@ router.post("/create",
     PostController.createPost
 )
 
-router.patch("/update-post", 
+router.patch("/update-post/:id", 
     auth(USER_ROLES.USER),
     fileUploadHandler(),
     validateRequest(PostValidation.updatePostZodSchema), 

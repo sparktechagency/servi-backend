@@ -6,10 +6,18 @@ import { StatusCodes } from "http-status-codes";
 import { Post } from "../post/post.model";
 
 
-const createReviewToDB = async(payload: any): Promise<IReview>=>{
+const createReviewToDB = async(payload:IReview): Promise<IReview>=>{
 
-    const isServiceExist:any = await Post.findById({_id: new mongoose.Types.ObjectId(payload.service)});
-    if(!isServiceExist){
+    // Validate ID before making a database call
+    if (!mongoose.Types.ObjectId.isValid(payload.service)) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid Offer ID');
+    }
+
+    console.log(payload)
+
+    // Fetch service and check if it exists in one query
+    const service:any = await Post.findById(payload.service);
+    if (!service) {
         throw new ApiError(StatusCodes.NOT_FOUND, "No Service Found");
     }
 
@@ -20,25 +28,24 @@ const createReviewToDB = async(payload: any): Promise<IReview>=>{
         if (rating < 1 || rating > 5) {
             throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid rating value");
         }
-        
 
-        // Update artist's rating and total ratings count
-        const totalRating = isServiceExist.totalRating + 1;
+        // Update service's rating and total ratings count
+        const totalRating = service.totalRating + 1;
 
         let newRating;
-        if (isServiceExist.rating === null || isServiceExist.rating === 0) {
+        if (service.rating === null || service.rating === 0) {
             // If no previous ratings, the new rating is the first one
             newRating = rating;
         } else {
             // Calculate the new rating based on previous ratings
-            newRating = ((isServiceExist.rating * isServiceExist.totalRating) + rating) / totalRating;
+            newRating = ((service.rating * service.totalRating) + rating) / totalRating;
         }
     
-        isServiceExist.totalRating = totalRating;
-        isServiceExist.rating = Number(newRating).toFixed(2);
+        service.totalRating = totalRating;
+        service.rating = parseFloat(newRating.toFixed(2));
     
         // Save the updated salon document
-        await isServiceExist.save();
+        await service.save();
     }
 
     const result = await Review.create(payload);
@@ -49,7 +56,13 @@ const createReviewToDB = async(payload: any): Promise<IReview>=>{
 };
 
 const getReviewFromDB = async(id:any): Promise<IReview[]>=>{
-    const reviews = await Review.find({service: new mongoose.Types.ObjectId(id)});
+
+    // Validate ID before making a database call
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid Offer ID');
+    }
+    
+    const reviews = await Review.find({service: id});
     return reviews;
 };
 

@@ -34,29 +34,37 @@ const createPost = async (payload: IPost): Promise<IPost> => {
     return result;
 }
 
-const updatePost = async (payload: any, user: any): Promise<IPost | null> => {
+const updatePost = async (id:string, payload:IPost): Promise<IPost | null> => {
 
-    const isValidUser: any = await User.findById(user?.id).select("+post");
-    const isExistPost: any = await Post.findById({_id: new mongoose.Types.ObjectId(isValidUser?.post as string)});
-
+    // Validate ID before making a database call
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid Offer ID');
+    }
+    
+    const isExistPost = await Post.findById({_id: id});
     if (!isExistPost) {
-        throw new ApiError(StatusCodes.UNAUTHORIZED, "You are not authorized to edit Post");
+        throw new ApiError(StatusCodes.UNAUTHORIZED, "No Post Found By this ID!");
     }
 
-    const { image, ...othersValue } = payload;
+    //Partial type to indicate that the updateData object might be missing some properties
+    const updateData: Partial<IPost> = { ...payload }; 
+    delete updateData.image;
 
     // Remove file only if `imagesToDelete` is present
-    if (image) {
-        unlinkFile(isExistPost?.image);
-        othersValue.image = image
+    if (payload.image) {
+        if (isExistPost.image) { // Make sure there's an existing image before unlinking
+            unlinkFile(isExistPost.image);
+        }
+        updateData.image = payload.image
     }
 
     // Update Post and return result
     const result = await Post.findByIdAndUpdate(
-        { _id: isValidUser?.post },
-        othersValue,
+        { _id: id },
+        updateData as IPost,
         { new: true }
     );
+
     return result;
 };
 

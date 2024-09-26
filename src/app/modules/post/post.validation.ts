@@ -14,7 +14,9 @@ const createPostZodSchema = z.object({
 const updatePostZodSchema = z.object({
   body: z.object({
     title: z.string().optional(),
-    price: z.number().optional(),
+    price: z
+      .union([z.string().transform((val) => parseFloat(val)), z.number()])
+      .refine((val:any) => !isNaN(val), { message: "Price must be a valid number." }).optional(),
     price_breakdown: z.string().optional(),
     description: z.string().optional(),
     category: z.string().optional(),

@@ -1,4 +1,4 @@
-import mongoose, { Schema, model, Types } from 'mongoose';
+import { Schema, model } from 'mongoose';
 import { IMessage, MessageModel } from './message.interface';
 
 // Define the schema
@@ -17,19 +17,19 @@ const messageSchema = new Schema<IMessage, MessageModel>(
         text: { type: String },
         offer: {
             service: { 
-                type: String, 
-                required: false
-            },
-            amount: { 
-                type: Number, 
-                required: false
-            },
-            details: { 
-                type: String, 
-                required: false
-            },
-            bookingId: {
                 type: Schema.Types.ObjectId,
+                ref: 'Post'
+            },
+            price: { 
+                type: String, 
+                required: false
+            },
+            offerDescription: { 
+                type: String, 
+                required: false
+            },
+            offerId: {
+                type: String,
                 required: false
             },
             status: {

@@ -5,11 +5,11 @@ export type IMessage = {
     sender: Types.ObjectId;
     text?:string;
     offer?:{
-        service: string;
-        amount: number;
-        details: string;
-        bookingId: Types.ObjectId,
-        status?: "Accepted" | "Rejected" | "Pending"
+        service: Types.ObjectId,
+        price: string;
+        offerDescription: string;
+        offerId: string,
+        status: 'Pending' | 'Completed' | "Ongoing" | "Rejected",
     };
     messageType: 'text' | 'offer';
 };

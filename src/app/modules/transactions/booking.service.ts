@@ -23,7 +23,7 @@ const createBooking= async(payload: IBooking): Promise<IBooking>=>{
 
     const createBooking={
         ...payload,
-        bookingId: await generateBookingId()
+        bookingId: generateBookingId()
     }
 
     const booking = await Booking.create(createBooking);

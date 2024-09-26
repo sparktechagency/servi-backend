@@ -2,7 +2,7 @@ import { Model, Types } from 'mongoose';
 
 export type IPost = {
   user: Types.ObjectId;
-  image: string;
+  image?: string;
   title: string;
   price: number;
   price_breakdown: string;

@@ -22,6 +22,18 @@ const offerSchema = new Schema<IOffer, OfferModel>(
             type: String,
             enum: ['Pending', 'Completed', "Ongoing", "Rejected"],
             default: "Pending"
+        },
+        offerId: {
+            type: String,
+            required: true
+        },
+        offerDescription: {
+            type: String,
+            required: false
+        },
+        price: {
+            type: String,
+            required: false
         }
     },
     {
