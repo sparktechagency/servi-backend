@@ -28,6 +28,21 @@ const getOfferFromDB = async(user:JwtPayload): Promise<IOffer[]>=>{
     return offer;
 }
 
+const offerHistoryFromDB = async(user:JwtPayload): Promise<IOffer[]>=>{
+    const offer = await Offer.find({user: user?.id})
+        .populate([
+            {
+                path: "provider", 
+                select: "name"
+            },
+            {
+                path: "service", 
+                select: "title image price category"
+            }
+        ]).select("provider service status").lean();
+    return offer;
+}
+
 const getOfferDetailsFromDB = async(id:string): Promise<IOffer | null>=>{
 
     // Validate ID before making a database call
@@ -62,5 +77,6 @@ export const OfferService = {
     createOfferToDB,
     getOfferFromDB,
     respondOfferToDB,
-    getOfferDetailsFromDB
+    getOfferDetailsFromDB,
+    offerHistoryFromDB
 }

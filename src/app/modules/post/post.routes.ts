@@ -23,9 +23,9 @@ router.patch("/update-post/:id",
 
 router.get("/popular", auth(USER_ROLES.USER), PostController.popularService);
 router.get("/recommended", auth(USER_ROLES.USER), PostController.recommendedService);
-router.get("/my-service", auth(USER_ROLES.USER), PostController.myPostList);
-router.get("/", auth(USER_ROLES.USER), PostController.serviceList);
-router.get("/:id", auth(USER_ROLES.USER), PostController.serviceDetails);
+router.get("/my-post", auth(USER_ROLES.USER), PostController.myPostList);
+router.get("/", auth(USER_ROLES.USER), PostController.postList);
+router.get("/:id", auth(USER_ROLES.USER), PostController.postDetails);
 router.delete("/delete/:id", auth(USER_ROLES.USER), PostController.updatePost);
 
 export const PostRoutes = router

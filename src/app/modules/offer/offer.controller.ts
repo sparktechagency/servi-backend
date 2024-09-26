@@ -34,13 +34,24 @@ const getOffer = catchAsync(async(req: Request, res: Response)=>{
     })
 })
 
+const offerHistory = catchAsync(async(req: Request, res: Response)=>{
+    const user = req.user;
+    const result = await OfferService.offerHistoryFromDB(user);
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Offer History Retrieved Successfully",
+        data: result
+    })
+})
+
 const getOfferDetails = catchAsync(async(req: Request, res: Response)=>{
     const id = req.params.id;
     const result = await OfferService.getOfferDetailsFromDB(id);
     sendResponse(res, {
         statusCode: StatusCodes.OK,
         success: true,
-        message: "Offer Retrieved Successfully",
+        message: "Offer History Retrieved Successfully",
         data: result
     })
 })
@@ -62,5 +73,6 @@ export const OfferController = {
     createOffer,
     getOffer,
     respondOffer,
-    getOfferDetails
+    getOfferDetails,
+    offerHistory
 }

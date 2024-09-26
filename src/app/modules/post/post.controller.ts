@@ -74,7 +74,7 @@ const myPostList = catchAsync( async(req: Request, res: Response)=>{
     });
 })
 
-const serviceList = catchAsync( async(req: Request, res: Response)=>{
+const postList = catchAsync( async(req: Request, res: Response)=>{
     const query = req.query;
     const result = await PostService.postListFromDB(query);
 
@@ -86,7 +86,7 @@ const serviceList = catchAsync( async(req: Request, res: Response)=>{
     });
 })
 
-const serviceDetails = catchAsync( async(req: Request, res: Response)=>{
+const postDetails = catchAsync( async(req: Request, res: Response)=>{
     const id = req.params.id;
     const result = await PostService.postDetailsFromDB(id);
 
@@ -127,8 +127,8 @@ export const PostController = {
     updatePost,
     deletePost,
     myPostList,
-    serviceList,
+    postList,
     popularService,
     recommendedService,
-    serviceDetails
+    postDetails
 }

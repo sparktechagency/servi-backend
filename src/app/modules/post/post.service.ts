@@ -41,7 +41,7 @@ const updatePost = async (id:string, payload:IPost): Promise<IPost | null> => {
         throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid Offer ID');
     }
     
-    const isExistPost = await Post.findById({_id: id});
+    const isExistPost:any = await Post.findById({_id: id});
     if (!isExistPost) {
         throw new ApiError(StatusCodes.UNAUTHORIZED, "No Post Found By this ID!");
     }
@@ -77,7 +77,10 @@ const deletePostFromDB = async (id:string): Promise<IPost | undefined> => {
 }
 
 const myPostListFromDB = async (user:JwtPayload): Promise<IPost[]> => {
-    const posts:any = await Post.find({user: user?.id}).select("title image price description service");
+
+    const posts:any = await Post.find({user: user?.id})
+        .select("title image price description category")
+        .lean();
     return posts;
 }
 

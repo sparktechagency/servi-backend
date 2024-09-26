@@ -30,7 +30,7 @@ const createPaymentIntentToStripe = async (payload: any) => {
         metadata: { integration_check: 'accept_a_payment' }
     });
 
-    return { clientSecret: paymentIntent?.client_secret };
+    return paymentIntent;
 }
 
 
