@@ -6,6 +6,7 @@ export type IUser = {
   appId: string;
   role: USER_ROLES;
   contact: string;
+  dateOfBirth: string;
   email: string;
   password: string;
   location: string;

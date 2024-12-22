@@ -1,8 +1,8 @@
 import { StatusCodes } from "http-status-codes";
 import ApiError from "../../../errors/ApiError";
 import { User } from "../user/user.model";
-import { IBooking } from "./booking.interface";
-import { Booking } from "./booking.model";
+import { IBooking } from "./transactions.interface";
+import { Booking } from "./transaction.model";
 import { JwtPayload } from "jsonwebtoken";
 import generateBookingId from "../../../util/generateBookingId";
 import { Notification } from "../notification/notification.model";

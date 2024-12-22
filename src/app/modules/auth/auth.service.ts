@@ -142,6 +142,7 @@ const verifyEmailToDB = async (payload: IVerifyEmail) => {
       'Verification Successful: Please securely store and utilize this code for reset password';
     data = createToken;
   }
+  
   return { data, message };
 };
 

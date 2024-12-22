@@ -10,6 +10,8 @@ import { ReviewRoutes } from '../app/modules/review/review.routes';
 import { BannerRoutes } from '../app/modules/banner/banner.routes';
 import { PaymentRoutes } from '../app/modules/payment/payment.routes';
 import { OfferRouter } from '../app/modules/offer/offer.routes';
+import { NotificationRoutes } from '../app/modules/notification/notification.routes';
+import { BookmarkRoutes } from '../app/modules/bookmark/bookmark.routes';
 const router = express.Router();
 
 const apiRoutes = [
@@ -24,6 +26,8 @@ const apiRoutes = [
   { path: '/banner', route: BannerRoutes },
   { path: '/payment', route: PaymentRoutes },
   { path: '/offer', route: OfferRouter },
+  { path: '/notification', route: NotificationRoutes },
+  { path: '/bookmark', route: BookmarkRoutes },
 ];
 
 apiRoutes.forEach(route => router.use(route.path, route.route));

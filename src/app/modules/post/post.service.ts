@@ -22,32 +22,32 @@ const createPost = async (payload: IPost): Promise<IPost> => {
 
     payload.price = Number(price);
 
-    const result:any = await Post.create(payload);
-    if(!result){
+    const result: any = await Post.create(payload);
+    if (!result) {
         throw new ApiError(StatusCodes.UNAUTHORIZED, "Failed to create Post");
     }
 
-    if(result?._id){         
-        await User.findByIdAndUpdate({_id: result?.user}, {$set: {post: result?._id}});  
+    if (result?._id) {
+        await User.findByIdAndUpdate({ _id: result?.user }, { $set: { post: result?._id } });
     }
 
     return result;
 }
 
-const updatePost = async (id:string, payload:IPost): Promise<IPost | null> => {
+const updatePost = async (id: string, payload: IPost): Promise<IPost | null> => {
 
     // Validate ID before making a database call
     if (!mongoose.Types.ObjectId.isValid(id)) {
         throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid Offer ID');
     }
-    
-    const isExistPost:any = await Post.findById({_id: id});
+
+    const isExistPost: any = await Post.findById({ _id: id });
     if (!isExistPost) {
         throw new ApiError(StatusCodes.UNAUTHORIZED, "No Post Found By this ID!");
     }
 
     //Partial type to indicate that the updateData object might be missing some properties
-    const updateData: Partial<IPost> = { ...payload }; 
+    const updateData: Partial<IPost> = { ...payload };
     delete updateData.image;
 
     // Remove file only if `imagesToDelete` is present
@@ -68,25 +68,25 @@ const updatePost = async (id:string, payload:IPost): Promise<IPost | null> => {
     return result;
 };
 
-const deletePostFromDB = async (id:string): Promise<IPost | undefined> => {
+const deletePostFromDB = async (id: string): Promise<IPost | undefined> => {
     const post = await Post.findByIdAndDelete(id);
-    if(!post){
+    if (!post) {
         throw new ApiError(StatusCodes.NOT_FOUND, "No Post Found To Deleted");
     }
     return;
 }
 
-const myPostListFromDB = async (user:JwtPayload): Promise<IPost[]> => {
+const myPostListFromDB = async (user: JwtPayload): Promise<IPost[]> => {
 
-    const posts:any = await Post.find({user: user?.id})
+    const posts: any = await Post.find({ user: user?.id })
         .select("title image price description category")
         .lean();
     return posts;
 }
 
-const postListFromDB = async (query:any): Promise<IPost[]> => {
-    
-    const {search, rating, minPrice, maxPrice, ...filerData } = query;
+const postListFromDB = async (query: any): Promise<IPost[]> => {
+
+    const { search, rating, minPrice, maxPrice, ...filerData } = query;
     const anyConditions = [];
 
     //service search here
@@ -102,9 +102,9 @@ const postListFromDB = async (query:any): Promise<IPost[]> => {
     }
 
     // artist filter here
-    if(Object.keys(filerData).length){
+    if (Object.keys(filerData).length) {
         anyConditions.push({
-            $and: Object.entries(filerData).map(([field, value])=>({
+            $and: Object.entries(filerData).map(([field, value]) => ({
                 [field]: value
             }))
         })
@@ -119,7 +119,7 @@ const postListFromDB = async (query:any): Promise<IPost[]> => {
             },
         });
     }
-    
+
     //service filter with rating range
     if (rating) {
         anyConditions.push({
@@ -131,19 +131,19 @@ const postListFromDB = async (query:any): Promise<IPost[]> => {
     }
 
     const whereConditions = anyConditions.length > 0 ? { $and: anyConditions } : {};
-    const services:any = await Post.find(whereConditions).select("title image price description category");
+    const services: any = await Post.find(whereConditions).select("title image price description adult category");
 
 
     // get all of
     const bookmarkId = await Bookmark.find({}).distinct("post");
-    const bookmarkIdStrings = bookmarkId.map((id:any) => id.toString());
+    const bookmarkIdStrings = bookmarkId.map((id: any) => id.toString());
 
     // concat with bookmark id all of the service.
-    const serviceList = services?.map((item:any) => {
+    const serviceList = services?.map((item: any) => {
         const service = item.toObject();
         const isBookmark = bookmarkIdStrings.includes(service?.user?.toString());
 
-        const data:any = {
+        const data: any = {
             ...service,
             bookmark: isBookmark
         }
@@ -153,43 +153,37 @@ const postListFromDB = async (query:any): Promise<IPost[]> => {
     return serviceList;
 }
 
-const postDetailsFromDB = async (id:any): Promise<IPost | {}> => {
+const postDetailsFromDB = async (id: any): Promise<IPost | {}> => {
 
-    const service:any = await Post.findById(id)
-    .populate({path: "user", select: "name profile"})
-    .select("user image title price price_breakdown description service location rating totalRating");
-    
-    const reviews:any = await Review.find({service: service?._id}).populate({path: "user", select: "name profile"}).select(" user comment rating");
+    const service: any = await Post.findById(id)
+        .populate({ path: "user", select: "name profile" })
+        .select("user image title price price_breakdown description category location rating totalRating");
+
+    const reviews: any = await Review.find({ service: service?._id }).populate({ path: "user", select: "name profile" }).select(" user createdAt comment rating");
 
     const result = service?.toObject();
-    const data ={
+    const data = {
         ...result,
         reviews: reviews
     }
-    
+
     return data;
 }
 
 const popularServiceFromDB = async (): Promise<IPost[]> => {
 
     // find popular provider by rating
-    const service:any = await Post.find({rating: {$gt: 0}}).select("image title rating location");
+    const services: any = await Post.find({ rating: { $gt: 0 } }).select("image title adult rating location").lean();
 
-    // get all of
-    const bookmarkId = await Bookmark.find({}).distinct("service");
-    const bookmarkIdStrings = bookmarkId.map((id:any) => id.toString());
-
-    // concat with bookmark id all of the service.
-    const popularService = service?.map((item:any) => {
-        const service = item.toObject();
-        const isBookmark = bookmarkIdStrings.includes(service?.user?.toString());
-
-        const data:any = {
-            ...service,
-            bookmark: isBookmark
-        }
-        return data;
-    });
+    const popularService = await Promise.all(
+        services.map(async (item: any) => {
+            const isBookmark = await Bookmark.findOne({ service: item?._id });
+            return {
+                ...item,
+                bookmark: !!isBookmark, // Add bookmark field as a boolean
+            };
+        })
+    );
 
     return popularService;
 }
@@ -197,33 +191,30 @@ const popularServiceFromDB = async (): Promise<IPost[]> => {
 const recommendedServiceFromDB = async (): Promise<IPost[]> => {
 
     // find latest provider by rating
-    const service:any = await Post.find({})
-        .sort({ createdAt: -1 }) 
-        .select("image title rating location");
+    const services: any = await Post.find({})
+        .sort({ createdAt: -1 })
+        .select("image title rating adult location")
+        .lean();
 
-    // get all of
-    const bookmarkId = await Bookmark.find({}).distinct("service");
-    const bookmarkIdStrings = bookmarkId.map((id:any) => id.toString());
 
-    // concat with bookmark id all of the service.
-    const recommendedService = service?.map((item:any) => {
-        const service = item.toObject();
-        const isBookmark = bookmarkIdStrings.includes(service?.user?.toString());
 
-        const data:any = {
-            ...service,
-            bookmark: isBookmark
-        }
-        return data;
-    });
+    const recommendedService = await Promise.all(
+        services.map(async (item: any) => {
+            const isBookmark = await Bookmark.findOne({ service: item?._id });
+            return {
+                ...item,
+                bookmark: !!isBookmark, // Add bookmark field as a boolean
+            };
+        })
+    );
 
     return recommendedService;
 }
 
-export const PostService = { 
-    createPost, 
-    updatePost, 
-    deletePostFromDB, 
+export const PostService = {
+    createPost,
+    updatePost,
+    deletePostFromDB,
     postListFromDB,
     myPostListFromDB,
     popularServiceFromDB,

@@ -1,7 +1,7 @@
 import { model, Schema } from "mongoose";
-import { IBooking, BookingModel } from "./booking.interface"
+import { ITransaction, TransactionModel } from "./transactions.interface"
 
-const bookingSchema = new Schema<IBooking, BookingModel>(
+const transactionSchema = new Schema<ITransaction, TransactionModel>(
     {
         user: {
             type: Schema.Types.ObjectId,
@@ -17,14 +17,14 @@ const bookingSchema = new Schema<IBooking, BookingModel>(
             type: Number,
             required: true,
         },
-        bookingId: {
+        offerId: {
             type: String,
             required: true
         },
         status: {
             type: String,
-            enum: ["Pending", "Complete", "Ongoing", "Reject"],
-            default: "Pending"
+            enum: ["Confirm", "Refund"],
+            default: "Confirm"
         },
         payment_method: {
             type: String,
@@ -38,13 +38,9 @@ const bookingSchema = new Schema<IBooking, BookingModel>(
         transactionId: {
             type: String,
             require: true
-        },
-        booking_time: {
-            type: String,
-            required: true
         }
     },
     {timestamps: true}
 );
 
-export const Booking = model<IBooking, BookingModel>("Booking", bookingSchema);
+export const Transaction = model<ITransaction, TransactionModel>("Transaction", transactionSchema);

@@ -10,6 +10,7 @@ export type IPost = {
   category: string;
   location: string;
   rating?: number;
+  adult: boolean;
   totalRating?: Number;
 };
 

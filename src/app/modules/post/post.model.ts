@@ -36,6 +36,10 @@ const postSchema = new Schema<IPost, PostModal>(
       type: String,
       required: true
     },
+    adult: {
+      type: Boolean,
+      default: false,
+    },
     rating: {
       type: Number,
       default: 0

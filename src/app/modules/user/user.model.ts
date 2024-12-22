@@ -29,7 +29,11 @@ const userSchema = new Schema<IUser, UserModal>(
     },
     contact: {
       type: String,
-      required: false,
+      default: "",
+    },
+    dateOfBirth: {
+      type: String,
+      default: "",
     },
     password: {
       type: String,
@@ -39,11 +43,11 @@ const userSchema = new Schema<IUser, UserModal>(
     },
     location: {
       type: String,
-      required: false,
+      default: ""
     },
     profile: {
       type: String,
-      default: 'https://i.ibb.co/z5YHLV9/profile.png',
+      default: 'https://www.shutterstock.com/image-vector/user-profile-icon-vector-avatar-600nw-2247726673.jpg',
     },
     verified: {
       type: Boolean,

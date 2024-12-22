@@ -39,15 +39,6 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
     { $set: { authentication } }
   );
 
-  // Schedule the reminder
-  
-  cron.schedule("*/5 * * * *", async () => {
-    const user = await User.findById(createUser?._id);
-    if(!user?.verified){
-      await User.findByIdAndDelete(createUser?._id);
-    }
-  })
-
   return createUser;
 };
 

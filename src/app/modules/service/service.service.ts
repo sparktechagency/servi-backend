@@ -8,15 +8,15 @@ import { IPost } from '../post/post.interface'
 import { Bookmark } from '../bookmark/bookmark.model'
 
 const createServiceToDB = async (payload: IService) => {
-  const {name, image} = payload;
-  const isExistName = await Service.findOne({name: name})
+  const { name, image } = payload;
+  const isExistName = await Service.findOne({ name: name })
 
-  if(isExistName){
+  if (isExistName) {
     unlinkFile(image);
     throw new ApiError(StatusCodes.NOT_ACCEPTABLE, "This Service Name Already Exist");
   }
 
-  const createService:any = await Service.create(payload)
+  const createService: any = await Service.create(payload)
   if (!createService) {
     unlinkFile(image);
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create Service')
@@ -31,12 +31,12 @@ const getServicesFromDB = async (): Promise<IService[]> => {
 }
 
 const updateServiceToDB = async (id: string, payload: IService) => {
-  const isExistService:any = await Service.findById(id);
+  const isExistService: any = await Service.findById(id);
 
-  if(!isExistService){
+  if (!isExistService) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Service doesn't exist");
   }
-  
+
   if (payload.image) {
     unlinkFile(isExistService?.image);
   }
@@ -58,26 +58,24 @@ const deleteServiceToDB = async (id: string): Promise<IService | null> => {
 
 const getServiceByCategoryFromDB = async (service: string): Promise<IPost[]> => {
 
-  const services = await Post.find({service: service}).select("title image price description service");
-  
-  // get all of
-  const bookmarkId = await Bookmark.find({}).distinct("service");
-  const bookmarkIdStrings = bookmarkId.map((id:any) => id.toString());
 
-  // concat with bookmark id all of the service.
-  const serviceList = services?.map((item:any) => {
-      const service = item.toObject();
-      const isBookmark = bookmarkIdStrings.includes(service?.user?.toString());
+  // find latest provider by rating
+  const services: any = await Post.find({category: service})
+    .sort({ createdAt: -1 })
+    .select("image title rating adult location")
+    .lean();
 
-      const data:any = {
-          ...service,
-          bookmark: isBookmark
-      }
-      return data;
-  });
+  const result = await Promise.all(
+    services.map(async (item: any) => {
+      const isBookmark = await Bookmark.findOne({ service: item?._id });
+      return {
+        ...item,
+        bookmark: !!isBookmark, // Add bookmark field as a boolean
+      };
+    })
+  );
 
-
-  return serviceList;
+  return result;
 }
 
 export const ServiceServices = {
