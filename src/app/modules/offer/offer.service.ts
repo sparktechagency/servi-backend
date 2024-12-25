@@ -4,46 +4,102 @@ import { IOffer } from "./offer.interface";
 import { Offer } from "./offer.model";
 import { JwtPayload } from "jsonwebtoken";
 import mongoose from "mongoose";
+import { sendNotifications } from "../../../helpers/notificationsHelper";
 
-const createOfferToDB = async(payload:any): Promise<IOffer>=>{
+const createOfferToDB = async (payload:IOffer): Promise<IOffer> => {
+
     const offer = await Offer.create(payload);
-    if(!offer){
+    if (!offer) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create offer");
+    }else{
+        const data = {
+            text: `is requesting to book your service`,
+            sender: payload.user,
+            receiver: payload.provider,
+            referenceId: offer._id,
+            screen: "OFFER"
+        }
+
+        await sendNotifications(data)
     }
     return offer;
 }
 
-const getOfferFromDB = async(user:JwtPayload): Promise<IOffer[]>=>{
-    const offer = await Offer.find({provider: user?.id})
+const getOfferFromDB = async (user: JwtPayload, query: Record<string, any>): Promise<IOffer[]> => {
+
+    const { page, limit } = query;
+
+    const pages = parseInt(page) || 1;
+    const size = parseInt(limit) || 10;
+    const skip = (pages - 1) * size;
+
+    const offers = await Offer.find({ provider: user?.id })
         .populate([
             {
-                path: "user", 
+                path: "user",
                 select: "name profile"
             },
             {
-                path: "service", 
+                path: "service",
                 select: "title image price"
             }
-        ]).select("user service status").lean();
-    return offer;
+        ])
+        .select("user service status")
+        .lean()
+        .skip(skip)
+        .limit(size);
+
+    const count = await Offer.countDocuments({ provider: user?.id });
+
+    const data: any = {
+        offers,
+        meta: {
+            page: pages,
+            total: count
+        }
+    }
+
+    return data;
 }
 
-const offerHistoryFromDB = async(user:JwtPayload): Promise<IOffer[]>=>{
-    const offer = await Offer.find({user: user?.id})
+const offerHistoryFromDB = async (user: JwtPayload, query: Record<string, any>): Promise<IOffer[]> => {
+
+    const { page, limit } = query;
+
+    const pages = parseInt(page) || 1;
+    const size = parseInt(limit) || 10;
+    const skip = (pages - 1) * size;
+
+    const offers = await Offer.find({ user: user?.id })
         .populate([
             {
-                path: "provider", 
+                path: "provider",
                 select: "name"
             },
             {
-                path: "service", 
+                path: "service",
                 select: "title image price category"
             }
-        ]).select("provider service status").lean();
-    return offer;
+        ])
+        .select("provider service status")
+        .lean()
+        .skip(skip)
+        .limit(size);
+
+    const count = await Offer.countDocuments({ user: user?.id });
+
+    const data: any = {
+        offers,
+        meta: {
+            page: pages,
+            total: count
+        }
+    }
+
+    return data;
 }
 
-const getOfferDetailsFromDB = async(id:string): Promise<IOffer | null>=>{
+const getOfferDetailsFromDB = async (id: string): Promise<IOffer | null> => {
 
     // Validate ID before making a database call
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -53,21 +109,21 @@ const getOfferDetailsFromDB = async(id:string): Promise<IOffer | null>=>{
     const offer = await Offer.findById(id)
         .populate([
             {
-                path: "user", 
+                path: "user",
                 select: "name profile location"
             },
             {
-                path: "service", 
+                path: "service",
                 select: "title image price price_breakdown"
             }
         ]).select("user service status offerId offerDescription").lean();
     return offer;
 }
 
-const respondOfferToDB = async(id:string, status: any): Promise<IOffer | undefined>=>{
+const respondOfferToDB = async (id: string, status: any): Promise<IOffer | undefined> => {
 
-    const result = await Offer.findByIdAndUpdate({_id: id}, {status: status}, {new: true})
-    if(!result){
+    const result = await Offer.findByIdAndUpdate({ _id: id }, { status: status }, { new: true })
+    if (!result) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to change  offer Status");
     }
     return result;

@@ -1,5 +1,5 @@
-import { model, Schema } from "mongoose";
-import { INotification, NotificationModel } from "./notification.interface";
+import { model, Schema } from 'mongoose';
+import { INotification, NotificationModel } from './notification.interface';
 
 const notificationSchema = new Schema<INotification, NotificationModel>(
     {
@@ -7,15 +7,24 @@ const notificationSchema = new Schema<INotification, NotificationModel>(
             type: String,
             required: true
         },
-        sender: {
-            type: Schema.Types.ObjectId,
-            ref: "User",
-            required: true
-        },
         receiver: {
             type: Schema.Types.ObjectId,
-            ref: "User",
-            required: true
+            ref: 'User',
+            required: false
+        },
+        sender: {
+            type: Schema.Types.ObjectId,
+            ref: 'User',
+            required: false
+        },
+        referenceId: {
+            type: String,
+            required: false
+        },
+        screen: {
+            type: String,
+            enum: ['OFFER', 'CHAT'],
+            required: false
         },
         read: {
             type: Boolean,
@@ -23,16 +32,16 @@ const notificationSchema = new Schema<INotification, NotificationModel>(
         },
         type: {
             type: String,
-            required: false
-        },
-        adminRead: {
-            type: Boolean,
+            enum: ['ADMIN'],
             required: false
         }
-    }, 
+    },
     {
         timestamps: true
     }
-)
+);
 
-export const Notification = model<INotification, NotificationModel>("Notification", notificationSchema)
+export const Notification = model<INotification, NotificationModel>(
+    'Notification',
+    notificationSchema
+);

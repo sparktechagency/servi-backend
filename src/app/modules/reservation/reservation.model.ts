@@ -1,22 +1,22 @@
-import { model, Schema } from "mongoose";
-import { IOffer, OfferModel } from "./offer.interface";
+import { Schema, model } from "mongoose";
+import { IReservation, ReservationModel } from "./reservation.interface";
 import { randomBytes } from "crypto";
 
-const offerSchema = new Schema<IOffer, OfferModel>(
+const ReservationSchema = new Schema<IReservation, ReservationModel>(
     {
-        user: {
+        provider: {
             type: Schema.Types.ObjectId,
             ref: "User",
             required: true
         },
-        provider: {
+        user: {
             type: Schema.Types.ObjectId,
             ref: "User",
             required: true
         },
         service: {
             type: Schema.Types.ObjectId,
-            ref: "Post",
+            ref: "Port",
             required: true
         },
         status: {
@@ -37,33 +37,25 @@ const offerSchema = new Schema<IOffer, OfferModel>(
         txid: {
             type: String,
             unique: true,
-            index: true
-        },
-        description: {
-            type: String,
-            required: false
-        },
-        offerId: {
-            type: String,
-            required: false
+            index: true,
+            required: true
         }
+
     },
-    {
-        timestamps: true
-    }
-)
+    { timestamps: true }
+);
 
 
-offerSchema.pre("save", async function (next) {
-    const offer = this as IOffer;
+ReservationSchema.pre("save", async function (next) {
+    const reservation = this;
 
-    if ((offer as any).isNew && !offer.txid) {
+    if (reservation.isNew && !reservation.txid) {
         const prefix = "tx_";
         const uniqueId = randomBytes(8).toString("hex");
-        offer.txid = `${prefix}${uniqueId}`;
+        reservation.txid = `${prefix}${uniqueId}`;
     }
 
     next();
 });
 
-export const Offer = model<IOffer, OfferModel>("Offer", offerSchema);
+export const Reservation = model<IReservation, ReservationModel>("Reservation", ReservationSchema);

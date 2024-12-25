@@ -9,6 +9,7 @@ export default {
   port: process.env.PORT,
   bcrypt_salt_rounds: process.env.BCRYPT_SALT_ROUNDS,
   stripe_api_secret: process.env.STRIPE_SECRET_KEY,
+  mercado_secret: process.env.MERCADO_SECRET_KEY,
   jwt: {
     jwt_secret: process.env.JWT_SECRET,
     jwt_expire_in: process.env.JWT_EXPIRE_IN,
@@ -20,4 +21,8 @@ export default {
     host: process.env.EMAIL_HOST,
     pass: process.env.EMAIL_PASS,
   },
+  admin: {
+    email: process.env.ADMIN_EMAIL,
+    password: process.env.ADMIN_PASSWORD
+  }
 };

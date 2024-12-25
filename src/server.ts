@@ -5,16 +5,18 @@ import app from './app';
 import config from './config';
 import { socketHelper } from './helpers/socketHelper';
 import { errorLogger, logger } from './shared/logger';
+import seedSuperAdmin from './DB';
 
 //uncaught exception
 process.on('uncaughtException', error => {
-  errorLogger.error('UnhandleException Detected', error);
+  errorLogger.error('UnhandledException Detected', error);
   process.exit(1);
 });
 
 let server: any;
 async function main() {
   try {
+    seedSuperAdmin();
     mongoose.connect(config.database_url as string);
     logger.info(colors.green('🚀 Database connected successfully'));
 
@@ -34,18 +36,21 @@ async function main() {
         origin: '*',
       },
     });
+
     socketHelper.socket(io);
     //@ts-ignore
     global.io = io;
+
+
   } catch (error) {
     errorLogger.error(colors.red('🤢 Failed to connect Database'));
   }
 
-  //handle unhandleRejection
+  //handle unhandledRejection
   process.on('unhandledRejection', error => {
     if (server) {
       server.close(() => {
-        errorLogger.error('UnhandleRejection Detected', error);
+        errorLogger.error('UnhandledRejection Detected', error);
         process.exit(1);
       });
     } else {

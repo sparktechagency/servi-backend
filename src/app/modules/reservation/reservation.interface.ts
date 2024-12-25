@@ -1,15 +1,13 @@
 import { Model, Types } from "mongoose"
 
-export type IOffer = {
-    user: Types.ObjectId,
-    provider: Types.ObjectId,
+export type IReservation = {
+    provider: Types.ObjectId;
+    user: Types.ObjectId;
     service: Types.ObjectId;
     status: "Upcoming" | "Accepted" | "Canceled" | "Completed";
     paymentStatus: "Pending" | "Paid" | "Refunded";
     price: number;
     txid: string;
-    offerId?: string;
-    description?: string;
 }
 
-export type OfferModel = Model<IOffer>;
+export type ReservationModel = Model<IReservation, Record<string, unknown>>;

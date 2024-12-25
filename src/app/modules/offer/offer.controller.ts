@@ -24,8 +24,8 @@ const createOffer = catchAsync(async(req: Request, res: Response)=>{
 })
 
 const getOffer = catchAsync(async(req: Request, res: Response)=>{
-    const user = req.user;
-    const result = await OfferService.getOfferFromDB(user);
+    
+    const result = await OfferService.getOfferFromDB(req.user, req.query);
     sendResponse(res, {
         statusCode: StatusCodes.OK,
         success: true,
@@ -35,8 +35,7 @@ const getOffer = catchAsync(async(req: Request, res: Response)=>{
 })
 
 const offerHistory = catchAsync(async(req: Request, res: Response)=>{
-    const user = req.user;
-    const result = await OfferService.offerHistoryFromDB(user);
+    const result = await OfferService.offerHistoryFromDB(req.user, req.query);
     sendResponse(res, {
         statusCode: StatusCodes.OK,
         success: true,

@@ -15,6 +15,7 @@ const messageSchema = new Schema<IMessage, MessageModel>(
             ref: 'User'
         },
         text: { type: String },
+        image: { type: String },
         offer: {
             service: { 
                 type: Schema.Types.ObjectId,
@@ -40,7 +41,7 @@ const messageSchema = new Schema<IMessage, MessageModel>(
         },
         messageType: { 
             type: String, 
-            enum: ['text', 'offer'], 
+            enum: ['text', "image", "both" , 'offer'], 
             default: "text"
         }
     }, 

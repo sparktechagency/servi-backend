@@ -63,8 +63,7 @@ const deletePost = catchAsync( async(req: Request, res: Response)=>{
 })
 
 const myPostList = catchAsync( async(req: Request, res: Response)=>{
-    const user = req.user;
-    const result = await PostService.myPostListFromDB(user);
+    const result = await PostService.myPostListFromDB(req.user, req.query);
 
     sendResponse(res, {
         statusCode: StatusCodes.OK,
@@ -88,7 +87,7 @@ const postList = catchAsync( async(req: Request, res: Response)=>{
 
 const postDetails = catchAsync( async(req: Request, res: Response)=>{
     const id = req.params.id;
-    const result = await PostService.postDetailsFromDB(id);
+    const result = await PostService.postDetailsFromDB(id, req.query);
 
     sendResponse(res, {
         statusCode: StatusCodes.OK,
@@ -100,7 +99,7 @@ const postDetails = catchAsync( async(req: Request, res: Response)=>{
 
 const popularService = catchAsync( async(req: Request, res: Response)=>{
     
-    const result = await PostService.popularServiceFromDB();
+    const result = await PostService.popularServiceFromDB(req.query);
 
     sendResponse(res, {
         statusCode: StatusCodes.OK,
@@ -112,7 +111,7 @@ const popularService = catchAsync( async(req: Request, res: Response)=>{
 
 const recommendedService = catchAsync( async(req: Request, res: Response)=>{
     
-    const result = await PostService.recommendedServiceFromDB();
+    const result = await PostService.recommendedServiceFromDB(req.query);
 
     sendResponse(res, {
         statusCode: StatusCodes.OK,
