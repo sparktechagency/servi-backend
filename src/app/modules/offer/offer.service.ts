@@ -6,12 +6,12 @@ import { JwtPayload } from "jsonwebtoken";
 import mongoose from "mongoose";
 import { sendNotifications } from "../../../helpers/notificationsHelper";
 
-const createOfferToDB = async (payload:IOffer): Promise<IOffer> => {
+const createOfferToDB = async (payload: IOffer): Promise<IOffer> => {
 
     const offer = await Offer.create(payload);
     if (!offer) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create offer");
-    }else{
+    } else {
         const data = {
             text: `is requesting to book your service`,
             sender: payload.user,
@@ -25,13 +25,7 @@ const createOfferToDB = async (payload:IOffer): Promise<IOffer> => {
     return offer;
 }
 
-const getOfferFromDB = async (user: JwtPayload, query: Record<string, any>): Promise<IOffer[]> => {
-
-    const { page, limit } = query;
-
-    const pages = parseInt(page) || 1;
-    const size = parseInt(limit) || 10;
-    const skip = (pages - 1) * size;
+const getOfferFromDB = async (user: JwtPayload): Promise<IOffer[]> => {
 
     const offers = await Offer.find({ provider: user?.id })
         .populate([
@@ -46,20 +40,8 @@ const getOfferFromDB = async (user: JwtPayload, query: Record<string, any>): Pro
         ])
         .select("user service status")
         .lean()
-        .skip(skip)
-        .limit(size);
 
-    const count = await Offer.countDocuments({ provider: user?.id });
-
-    const data: any = {
-        offers,
-        meta: {
-            page: pages,
-            total: count
-        }
-    }
-
-    return data;
+    return offers;
 }
 
 const offerHistoryFromDB = async (user: JwtPayload, query: Record<string, any>): Promise<IOffer[]> => {
@@ -116,7 +98,7 @@ const getOfferDetailsFromDB = async (id: string): Promise<IOffer | null> => {
                 path: "service",
                 select: "title image price price_breakdown"
             }
-        ]).select("user service status offerId offerDescription").lean();
+        ]).select("user service status offerId offerDescription createdAt").lean();
     return offer;
 }
 
@@ -129,10 +111,42 @@ const respondOfferToDB = async (id: string, status: any): Promise<IOffer | undef
     return result;
 }
 
+const transactionHistoryFromDB = async (user: JwtPayload): Promise<IOffer[] | null> => {
+    const transactions = await Offer.find(
+        {
+            $or: [
+                { user: user.id }, 
+                { provider: user.id },
+            ],
+            status: "Completed",
+            paymentStatus: "Paid"
+
+        }
+    )
+        .select("price createdAt updatedAt txid user provider")
+        .lean();
+
+    if (!transactions.length) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Transactions not found");
+    }
+
+    // Add `status` field to each transaction
+    const result = transactions.map((transaction) => {
+        const payment = transaction.user.toString() === user.id.toString() ? "Cash Out" : "Cash In";
+        return {
+            ...transaction,
+            payment,
+        };
+    });
+
+    return result;
+};
+
 export const OfferService = {
     createOfferToDB,
     getOfferFromDB,
     respondOfferToDB,
     getOfferDetailsFromDB,
-    offerHistoryFromDB
+    offerHistoryFromDB,
+    transactionHistoryFromDB
 }

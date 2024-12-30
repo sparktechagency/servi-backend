@@ -5,13 +5,11 @@ import { MessageController } from "./message.controller";
 import fileUploadHandler from '../../middlewares/fileUploadHandler';
 const router = express.Router()
 
-router.post("/", 
+router.post("/",
     auth(USER_ROLES.USER),
-    fileUploadHandler(), 
+    fileUploadHandler(),
     async (req: Request, res: Response, next: NextFunction) => {
-
         try {
-            
             const payload = req.body;
             let image;
 
@@ -23,7 +21,7 @@ router.post("/",
             next();
 
         } catch (error) {
-            return res.status(500).json({ message: "Failed to Upload image" });
+            res.status(500).json({ message: "Failed to Upload image" });
         }
     },
     MessageController.sendMessage

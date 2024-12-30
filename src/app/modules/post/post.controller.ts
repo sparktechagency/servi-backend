@@ -75,7 +75,7 @@ const myPostList = catchAsync( async(req: Request, res: Response)=>{
 
 const postList = catchAsync( async(req: Request, res: Response)=>{
     const query = req.query;
-    const result = await PostService.postListFromDB(query);
+    const result = await PostService.postListFromDB(req.user, query);
 
     sendResponse(res, {
         statusCode: StatusCodes.OK,
@@ -99,7 +99,7 @@ const postDetails = catchAsync( async(req: Request, res: Response)=>{
 
 const popularService = catchAsync( async(req: Request, res: Response)=>{
     
-    const result = await PostService.popularServiceFromDB(req.query);
+    const result = await PostService.popularServiceFromDB(req.user, req.query);
 
     sendResponse(res, {
         statusCode: StatusCodes.OK,
@@ -111,12 +111,24 @@ const popularService = catchAsync( async(req: Request, res: Response)=>{
 
 const recommendedService = catchAsync( async(req: Request, res: Response)=>{
     
-    const result = await PostService.recommendedServiceFromDB(req.query);
+    const result = await PostService.recommendedServiceFromDB(req.user, req.query);
 
     sendResponse(res, {
         statusCode: StatusCodes.OK,
         success: true,
         message: "Recommended Service Retrieved successfully",
+        data: result
+    });
+})
+
+const userServices = catchAsync( async(req: Request, res: Response)=>{
+    
+    const result = await PostService.userServicesFromDB(req.params.id);
+
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Service Retrieved successfully",
         data: result
     });
 })
@@ -129,5 +141,6 @@ export const PostController = {
     postList,
     popularService,
     recommendedService,
-    postDetails
+    postDetails,
+    userServices
 }

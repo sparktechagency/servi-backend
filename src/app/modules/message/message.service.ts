@@ -15,14 +15,15 @@ const sendMessageToDB = async (payload: any): Promise<IMessage> => {
     if (offer) {
         payload.messageType = "offer";
         offer.offerId = offerId;
+        payload.offer.offerId =  offerId;
 
         const createOffer = {
             user: payload.sender,
-            provider: offer.provider,
-            service: offer?.service,
+            provider: payload?.provider,
+            service: payload?.service,
             offerId: offerId,
             price: offer?.price,
-            offerDescription: offer?.offerDescription,
+            description: offer?.description,
         }
         const result = await Offer.create(createOffer);
         if (!result) {
@@ -58,7 +59,6 @@ const getMessageFromDB = async (id: any, query: Record<string, any>): Promise<IM
     const skip = (pages - 1) * size;
 
     const messages = await Message.find({ chatId: id }).sort({ createdAt: -1 })
-        .populate({ path: "sender", select: "name profile" })
         .skip(skip)
         .limit(size);
 
@@ -81,13 +81,29 @@ const responseOfferStatusToDB = async (id: any, status: string): Promise<IMessag
         throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid Chat Id")
     }
 
-    const messages: any = await Message.findByIdAndUpdate(
+    const message = await Message.findById(id).lean();
+    if(!message){
+        throw new ApiError(StatusCodes.NOT_FOUND, "No message found");
+    }
+
+
+    const updateMessage: any = await Message.findByIdAndUpdate(
         id,
         { $set: { 'offer.status': status } },
         { new: true }
     );
 
-    return messages;
+    if(!updateMessage){
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to update")
+    }else{
+        await Offer.findOneAndUpdate(
+            { offerId : message.offer?.offerId},
+            {status: status},
+            {new : true}
+        )
+    }
+
+    return message;
 }
 
 export const MessageService = { sendMessageToDB, getMessageFromDB, responseOfferStatusToDB };

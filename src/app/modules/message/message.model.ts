@@ -1,6 +1,7 @@
 import { Schema, model } from 'mongoose';
 import { IMessage, MessageModel } from './message.interface';
 
+
 // Define the schema
 const messageSchema = new Schema<IMessage, MessageModel>(
     {
@@ -17,15 +18,11 @@ const messageSchema = new Schema<IMessage, MessageModel>(
         text: { type: String },
         image: { type: String },
         offer: {
-            service: { 
-                type: Schema.Types.ObjectId,
-                ref: 'Post'
-            },
             price: { 
                 type: String, 
                 required: false
             },
-            offerDescription: { 
+            description: { 
                 type: String, 
                 required: false
             },
@@ -35,7 +32,7 @@ const messageSchema = new Schema<IMessage, MessageModel>(
             },
             status: {
                 type: String,
-                enum: ["Accepted", "Rejected", "Pending"],
+                enum: ["Upcoming", "Accepted", "Canceled"],
                 required: false
             }
         },
@@ -56,7 +53,7 @@ messageSchema.pre<IMessage>('save', function (next) {
 
         // Check if offer is present and status is not set
         if (this.offer && !this.offer.status) {
-            this.offer.status = 'Pending';
+            this.offer.status = 'Upcoming';
         }
     }
     next();

@@ -5,11 +5,12 @@ import { OfferController } from "./offer.controller";
 const router = express.Router();
 
 router.get("/offer-history", auth(USER_ROLES.USER), OfferController.offerHistory);
+router.get("/transaction-history", auth(USER_ROLES.USER), OfferController.transactionHistory);
 
 router.route('/')
   .post(
     auth(USER_ROLES.USER),
-    async (req: Request, res: Response, next: NextFunction) => {
+    (req: Request, res: Response, next: NextFunction) => {
       try {
         const { price, ...otherPayload } = req.body;
 
@@ -17,7 +18,7 @@ router.route('/')
         next();
 
       } catch (error) {
-        return res.status(500).json({ message: "Failed to convert string to number" });
+        res.status(500).json({ message: "Failed to convert string to number" });
       }
     },
     OfferController.createOffer

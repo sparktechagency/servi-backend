@@ -8,6 +8,7 @@ import mongoose from "mongoose";
 import { JwtPayload } from "jsonwebtoken";
 import { Bookmark } from "../bookmark/bookmark.model";
 import { Review } from "../review/review.model";
+import { IService } from "../service/service.interface";
 
 const createPost = async (payload: IPost): Promise<IPost> => {
 
@@ -103,10 +104,16 @@ const myPostListFromDB = async (user: JwtPayload, query: Record<string, any>): P
     return data;
 }
 
-const postListFromDB = async (query: any): Promise<IPost[]> => {
+const postListFromDB = async (user: JwtPayload, query: any): Promise<IPost[]> => {
 
     const { search, page, limit, rating, minPrice, maxPrice, ...filerData } = query;
     const anyConditions = [];
+
+    anyConditions.push(
+        {
+            user: {$ne : user.id }
+        }
+    )
 
     //service search here
     if (search) {
@@ -200,7 +207,8 @@ const postDetailsFromDB = async (id: any, query: Record<string, any>): Promise<I
 
     const service: any = await Post.findById(id)
         .populate({ path: "user", select: "name profile" })
-        .select("user image adult title price price_breakdown description category location rating totalRating");
+        .select("user image adult title price price_breakdown description category location rating totalRating")
+        .lean();
 
     
     if (!service) {
@@ -216,9 +224,12 @@ const postDetailsFromDB = async (id: any, query: Record<string, any>): Promise<I
 
     const count = await Review.countDocuments({ service: service?._id });
 
+    const isBookmark = await Bookmark.findOne({service: id});
+
     const data: any = {
         ...service,
         reviews,
+        isBookmark: !!isBookmark,
         meta: {
             page: pages,
             total: count
@@ -228,7 +239,7 @@ const postDetailsFromDB = async (id: any, query: Record<string, any>): Promise<I
     return data;
 }
 
-const popularServiceFromDB = async (query: Record<string, any>): Promise<IPost[]> => {
+const popularServiceFromDB = async (user:JwtPayload, query: Record<string, any>): Promise<IPost[]> => {
 
     const { page, limit } = query;
 
@@ -237,7 +248,7 @@ const popularServiceFromDB = async (query: Record<string, any>): Promise<IPost[]
     const skip = (pages - 1) * size;
 
     // find popular provider by rating
-    const services: any = await Post.find({ rating: { $gt: 0 } })
+    const services: any = await Post.find({ rating: { $gt: 0 }, user: {$ne : user.id } })
         .select("image title adult rating location")
         .lean()
         .skip(skip)
@@ -253,7 +264,7 @@ const popularServiceFromDB = async (query: Record<string, any>): Promise<IPost[]
         })
     );
 
-    const count = await Post.countDocuments({ rating: { $gt: 0 } });
+    const count = await Post.countDocuments({ rating: { $gt: 0 }, user: { $ne: user.id } });
 
     const data: any = {
         services: popularService,
@@ -266,7 +277,7 @@ const popularServiceFromDB = async (query: Record<string, any>): Promise<IPost[]
     return data;
 }
 
-const recommendedServiceFromDB = async (query: Record<string, any>): Promise<IPost[]> => {
+const recommendedServiceFromDB = async (user:JwtPayload, query: Record<string, any>): Promise<IPost[]> => {
 
     const { page, limit } = query;
 
@@ -275,7 +286,7 @@ const recommendedServiceFromDB = async (query: Record<string, any>): Promise<IPo
     const skip = (pages - 1) * size;
 
     // find latest provider by rating
-    const services: any = await Post.find({})
+    const services: any = await Post.find({user: {$ne : user.id }} )
         .sort({ createdAt: -1 })
         .select("image title rating adult location")
         .lean()
@@ -294,7 +305,7 @@ const recommendedServiceFromDB = async (query: Record<string, any>): Promise<IPo
         })
     );
 
-    const count = await Post.countDocuments();
+    const count = await Post.countDocuments({user: {$ne : user.id }});
 
     const data: any = {
         services: recommendedService,
@@ -307,6 +318,19 @@ const recommendedServiceFromDB = async (query: Record<string, any>): Promise<IPo
     return data;
 }
 
+const userServicesFromDB = async (id: string): Promise<IPost[]>=>{
+    if(!mongoose.Types.ObjectId.isValid(id)){
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid Service ID");
+    }
+
+    const services: IPost[] = await Post.find({user: id}).select("title");
+    if(!services){
+        throw new ApiError(StatusCodes.NOT_FOUND, "No Services Found");
+    }
+
+    return services;
+}
+
 export const PostService = {
     createPost,
     updatePost,
@@ -315,5 +339,6 @@ export const PostService = {
     myPostListFromDB,
     popularServiceFromDB,
     postDetailsFromDB,
-    recommendedServiceFromDB
+    recommendedServiceFromDB,
+    userServicesFromDB
 } 

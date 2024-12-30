@@ -25,7 +25,7 @@ const createOffer = catchAsync(async(req: Request, res: Response)=>{
 
 const getOffer = catchAsync(async(req: Request, res: Response)=>{
     
-    const result = await OfferService.getOfferFromDB(req.user, req.query);
+    const result = await OfferService.getOfferFromDB(req.user);
     sendResponse(res, {
         statusCode: StatusCodes.OK,
         success: true,
@@ -68,10 +68,22 @@ const respondOffer = catchAsync(async(req: Request, res: Response)=>{
     })
 })
 
+const transactionHistory = catchAsync(async(req: Request, res: Response)=>{
+    const result = await OfferService.transactionHistoryFromDB(req.user);
+
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Transaction History Retrieved  Successfully",
+        data: result
+    })
+})
+
 export const OfferController = {
     createOffer,
     getOffer,
     respondOffer,
     getOfferDetails,
-    offerHistory
+    offerHistory,
+    transactionHistory
 }
