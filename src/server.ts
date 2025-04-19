@@ -12,6 +12,7 @@ process.on('uncaughtException', error => {
   errorLogger.error('UnhandledException Detected', error);
   process.exit(1);
 });
+//hello
 
 let server: any;
 async function main() {
