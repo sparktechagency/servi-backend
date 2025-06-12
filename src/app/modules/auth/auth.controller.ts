@@ -65,10 +65,22 @@ const changePassword = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const socialLogin = catchAsync(async (req: Request, res: Response) => {
+  const result = await AuthService.socialLoginFromDB(req.body);
+
+  sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Logged in Successfully',
+      data: result
+  });
+});
+
 export const AuthController = {
   verifyEmail,
   loginUser,
   forgetPassword,
   resetPassword,
   changePassword,
+  socialLogin,
 };

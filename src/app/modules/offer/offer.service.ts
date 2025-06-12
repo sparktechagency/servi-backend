@@ -5,8 +5,28 @@ import { Offer } from "./offer.model";
 import { JwtPayload } from "jsonwebtoken";
 import mongoose from "mongoose";
 import { sendNotifications } from "../../../helpers/notificationsHelper";
+import { Post } from "../post/post.model";
 
-const createOfferToDB = async (payload: IOffer): Promise<IOffer> => {
+
+import config from "../../../config";
+
+import { MercadoPagoConfig, Preference } from 'mercadopago';
+const client = new MercadoPagoConfig({
+    accessToken: config.mercado_secret as string,
+    options: { timeout: 5000 }
+});
+
+const preference = new Preference(client);
+
+const createOfferToDB = async (payload: IOffer): Promise<{}> => {
+    const isExistService = await Post.findById(payload.service);
+
+    if (!isExistService) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Service not found");
+    }
+
+    payload.provider = isExistService.user;
+    payload.price = isExistService.price;
 
     const offer = await Offer.create(payload);
     if (!offer) {
@@ -22,7 +42,29 @@ const createOfferToDB = async (payload: IOffer): Promise<IOffer> => {
 
         await sendNotifications(data)
     }
-    return offer;
+
+    const paymentData = {
+        items: [
+            {
+                id: "1234",
+                title: "Product",
+                quantity: 1,
+                unit_price: Number(isExistService.price)
+            }
+        ],
+        payer: {
+            email: payload.user
+        },
+        back_urls: {
+            success: 'https://nadir3000.binarybards.online/success', // Optional but recommended
+            failure: 'https://nadir3000.binarybards.online/faillure', // Optional
+            pending: 'https://nadir3000.binarybards.online/pending', // Optional
+        },
+        auto_return: 'approved', // Optional
+    };
+
+    const response = await preference.create({ body: paymentData } as any);
+    return { _id: offer?._id, url: response?.init_point };
 }
 
 const getOfferFromDB = async (user: JwtPayload): Promise<IOffer[]> => {
@@ -112,12 +154,10 @@ const respondOfferToDB = async (id: string, status: any): Promise<IOffer | undef
 }
 
 const transactionHistoryFromDB = async (user: JwtPayload): Promise<IOffer[] | null> => {
+
     const transactions = await Offer.find(
         {
-            $or: [
-                { user: user.id }, 
-                { provider: user.id },
-            ],
+            $or: [ { user: user.id }, { provider: user.id } ],
             status: "Completed",
             paymentStatus: "Paid"
 
@@ -125,10 +165,6 @@ const transactionHistoryFromDB = async (user: JwtPayload): Promise<IOffer[] | nu
     )
         .select("price createdAt updatedAt txid user provider")
         .lean();
-
-    if (!transactions.length) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, "Transactions not found");
-    }
 
     // Add `status` field to each transaction
     const result = transactions.map((transaction) => {
@@ -142,11 +178,37 @@ const transactionHistoryFromDB = async (user: JwtPayload): Promise<IOffer[] | nu
     return result;
 };
 
+const confirmPaymentToDB = async (id: string): Promise<IOffer> => {
+    if(!mongoose.Types.ObjectId.isValid(id)){
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid ID");
+    }
+    
+    const result = await Offer.findByIdAndUpdate({ _id: id }, { paymentStatus: "Paid" }, { new: true })
+    if (!result) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to change  offer Status");
+    }
+    return result;
+}
+
+const deleteReservationFromDB = async (id: string): Promise<IOffer> => {
+    if(!mongoose.Types.ObjectId.isValid(id)){
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid ID");
+    }
+    
+    const result = await Offer.findByIdAndDelete({ _id: id })
+    if (!result) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to delete reservation");
+    }
+    return result;
+}
+
 export const OfferService = {
     createOfferToDB,
     getOfferFromDB,
     respondOfferToDB,
     getOfferDetailsFromDB,
     offerHistoryFromDB,
-    transactionHistoryFromDB
+    transactionHistoryFromDB,
+    confirmPaymentToDB,
+    deleteReservationFromDB
 }

@@ -23,12 +23,15 @@ router.route('/')
     },
     OfferController.createOffer
   )
-  .get(auth(USER_ROLES.USER), OfferController.getOffer)
+  .get(auth(USER_ROLES.USER), OfferController.getOffer);
+
 
 router
   .route('/:id')
   .patch(auth(USER_ROLES.USER), OfferController.respondOffer)
   .get(auth(USER_ROLES.USER), OfferController.getOfferDetails)
+  .delete(auth(USER_ROLES.USER), OfferController.deleteReservation)
+  .post(auth(USER_ROLES.USER), OfferController.confirmPayment)
 
 
 export const OfferRouter = router;

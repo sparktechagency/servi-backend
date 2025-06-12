@@ -27,6 +27,6 @@ router.get("/my-post", auth(USER_ROLES.USER), PostController.myPostList);
 router.get("/", auth(USER_ROLES.USER), PostController.postList);
 router.get("/user-service/:id", auth(USER_ROLES.USER), PostController.userServices);
 router.get("/:id", auth(USER_ROLES.USER), PostController.postDetails);
-router.delete("/delete/:id", auth(USER_ROLES.USER), PostController.updatePost);
+router.delete("/delete/:id", auth(USER_ROLES.USER), PostController.deletePost);
 
 export const PostRoutes = router

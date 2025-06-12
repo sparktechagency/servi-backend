@@ -131,7 +131,7 @@ const userServices = catchAsync( async(req: Request, res: Response)=>{
         message: "Service Retrieved successfully",
         data: result
     });
-})
+});
 
 export const PostController = {
     createPost,

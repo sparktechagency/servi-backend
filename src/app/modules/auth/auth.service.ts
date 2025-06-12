@@ -16,6 +16,8 @@ import cryptoToken from '../../../util/cryptoToken';
 import generateOTP from '../../../util/generateOTP';
 import { ResetToken } from '../resetToken/resetToken.model';
 import { User } from '../user/user.model';
+import { USER_ROLES } from '../../../enums/user';
+import { IUser } from '../user/user.interface';
 
 //login
 const loginUserFromDB = async (payload: ILoginData) => {
@@ -248,10 +250,50 @@ const changePasswordToDB = async (
   await User.findOneAndUpdate({ _id: user.id }, updateData, { new: true });
 };
 
+// social authentication
+const socialLoginFromDB = async (payload: IUser) => {
+
+  const { appId } = payload;
+
+  const role = USER_ROLES.USER
+
+  const isExistUser = await User.findOne({ appId });
+
+  if (isExistUser) {
+
+      //create token
+      const accessToken = jwtHelper.createToken(
+          { id: isExistUser._id, role: isExistUser.role },
+          config.jwt.jwt_secret as Secret,
+          config.jwt.jwt_expire_in as string
+      );
+
+      return { accessToken };
+
+  } else {
+
+      const user = await User.create({ appId, role, verified: true });
+      if (!user) {
+          throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to created User")
+      }
+
+      //create token
+      const accessToken = jwtHelper.createToken(
+          { id: user._id, role: user.role },
+          config.jwt.jwt_secret as Secret,
+          config.jwt.jwt_expire_in as string
+      );
+
+      return { accessToken };
+  }
+}
+
+
 export const AuthService = {
   verifyEmailToDB,
   loginUserFromDB,
   forgetPasswordToDB,
   resetPasswordToDB,
   changePasswordToDB,
+  socialLoginFromDB,
 };

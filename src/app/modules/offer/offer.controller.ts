@@ -79,11 +79,37 @@ const transactionHistory = catchAsync(async(req: Request, res: Response)=>{
     })
 })
 
+
+const confirmPayment = catchAsync(async(req: Request, res: Response)=>{
+    const result = await OfferService.confirmPaymentToDB(req.params.id);
+
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Payment Confirmed Successfully",
+        data: result
+    })
+})
+
+
+const deleteReservation = catchAsync(async(req: Request, res: Response)=>{
+    const result = await OfferService.deleteReservationFromDB(req.params.id);
+
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Reservation Deleted Successfully",
+        data: result
+    })
+})
+
 export const OfferController = {
     createOffer,
     getOffer,
     respondOffer,
     getOfferDetails,
     offerHistory,
-    transactionHistory
+    transactionHistory,
+    confirmPayment,
+    deleteReservation
 }

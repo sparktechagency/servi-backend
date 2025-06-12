@@ -1,0 +1,14 @@
+[
+    {
+        "relation": [
+            "delegate_permission/common.handle_all_urls"
+        ],
+        "target": {
+            "namespace": "android_app",
+            "package_name": "com.example.servi_app_camituresso",
+            "sha256_cert_fingerprints": [
+                "A8:05:C9:07:7D:41:E5:C2:96:FF:74:6D:65:AB:84:55:F8:C7:40:EF:82:5E:41:32:B0:9E:1E:22:E7:1A:96:AF"
+            ]
+        }
+    }
+]

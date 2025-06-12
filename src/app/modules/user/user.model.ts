@@ -107,7 +107,7 @@ userSchema.statics.isExistUserByEmail = async (email: string) => {
 
 //account check
 userSchema.statics.isAccountCreated = async (id: string) => {
-  const isUserExist:any = await User.findById(id);
+  const isUserExist: any = await User.findById(id);
   return isUserExist.accountInformation.status;
 };
 
@@ -122,16 +122,22 @@ userSchema.statics.isMatchPassword = async (
 //check user
 userSchema.pre('save', async function (next) {
   //check user
-  const isExist = await User.findOne({ email: this.email });
-  if (isExist) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, 'Email already exist!');
+
+  if (this.email) {
+
+    const isExist = await User.findOne({ email: this.email });
+    if (isExist) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Email already exist!');
+    }
   }
 
   //password hash
-  this.password = await bcrypt.hash(
-    this.password,
-    Number(config.bcrypt_salt_rounds)
-  );
+  if (this.password) {
+    this.password = await bcrypt.hash(
+      this.password,
+      Number(config.bcrypt_salt_rounds)
+    );
+  }
   next();
 });
 
